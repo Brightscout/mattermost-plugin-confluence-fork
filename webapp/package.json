@@ -77,7 +77,8 @@
     "redux": "4.0.5",
     "redux-mock-store": "1.5.4",
     "superagent": "5.3.1",
-    "typescript": "3.9.6"
+    "typescript": "3.9.6",
+    "@types/react-bootstrap": "0.32.25"
   },
   "jest": {
     "snapshotSerializers": [
