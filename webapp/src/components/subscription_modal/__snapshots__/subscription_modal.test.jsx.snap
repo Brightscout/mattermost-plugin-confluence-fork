@@ -8,6 +8,7 @@ exports[`components/ChannelSettingsModal subscription modal snapshot test 1`] = 
   dialogAs={
     Object {
       "$$typeof": Symbol(react.forward_ref),
+      "displayName": "ModalDialog",
       "render": [Function],
     }
   }
