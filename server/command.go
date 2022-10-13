@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/mattermost/mattermost-plugin-api/experimental/command"
@@ -32,6 +34,7 @@ const (
 	specifyAlias              = "Please specify a subscription name."
 	subscriptionDeleteSuccess = "Subscription **%s** has been deleted."
 	noChannelSubscription     = "No subscriptions found for this channel."
+	noSavedConfig             = "No saved config found"
 	commonHelpText            = "###### Mattermost Confluence Plugin - Slash Command Help\n\n" +
 		"* `/confluence connect [confluenceURL]` - Connect your Mattermost account to your Confluence account\n" +
 		"* `/confluence disconnect [confluenceURL]` - Disconnect your Mattermost account from your Confluence account\n" +
@@ -51,6 +54,12 @@ const (
 	invalidCommand         = "Invalid command."
 	installOnlySystemAdmin = "`/confluence install` can only be run by a system administrator."
 	configNotFoundError    = "configuration not found for %s. Please ask system admin to add config for %s in plugin configuration"
+	configServerURL        = "Server URL"
+	configClientID         = "Client ID"
+	configClientSecret     = "Client Secret"
+	configAPIEndpoint      = "%s/api/v4/actions/dialogs/open"
+	configModalTitle       = "Confluence Config"
+	configPerPage          = 10
 )
 
 var ConfluenceCommandHandler = Handler{
@@ -63,6 +72,8 @@ var ConfluenceCommandHandler = Handler{
 		"install/server": showInstallServerHelp,
 		"uninstall":      executeInstanceUninstall,
 		"help":           confluenceHelpCommand,
+		"config/add":     addConfig,
+		"config/list":    listConfig,
 	},
 	defaultHandler: executeConfluenceDefault,
 }
@@ -95,7 +106,7 @@ func (p *Plugin) GetCommand() (*model.Command, error) {
 		DisplayName:          "Confluence",
 		Description:          "Integration with Confluence.",
 		AutoComplete:         true,
-		AutoCompleteDesc:     "Available commands: subscribe, list, unsubscribe, edit, install, help.",
+		AutoCompleteDesc:     "Available commands: subscribe, config, list, unsubscribe, edit, install, help.",
 		AutoCompleteHint:     "[command]",
 		AutocompleteData:     getAutoCompleteData(),
 		AutocompleteIconData: iconData,
@@ -103,7 +114,7 @@ func (p *Plugin) GetCommand() (*model.Command, error) {
 }
 
 func getAutoCompleteData() *model.AutocompleteData {
-	confluence := model.NewAutocompleteData("confluence", "[command]", "Available commands: subscribe, list, unsubscribe, edit, install, help")
+	confluence := model.NewAutocompleteData("confluence", "[command]", "Available commands: subscribe, config, list, unsubscribe, edit, install, help")
 
 	install := model.NewAutocompleteData("install", "", "Connect Mattermost to a Confluence instance")
 	installItems := []model.AutocompleteListItem{{
@@ -142,6 +153,17 @@ func getAutoCompleteData() *model.AutocompleteData {
 
 	subscribe := model.NewAutocompleteData("subscribe", "", "Subscribe the current channel to notifications from Confluence")
 	confluence.AddCommand(subscribe)
+
+	config := model.NewAutocompleteData("config", "", "Config related options for confluence instances")
+	configOptions := []model.AutocompleteListItem{{
+		HelpText: "Add config for the confluence instance",
+		Item:     "add",
+	}, {
+		HelpText: "List all the added configs",
+		Item:     "list",
+	}}
+	config.AddStaticListArgument("", false, configOptions)
+	confluence.AddCommand(config)
 
 	unsubscribe := model.NewAutocompleteData("unsubscribe", "[name]", "Unsubscribe the current channel from notifications associated with the given subscription name")
 	unsubscribe.AddDynamicListArgument("name", "api/v1/autocomplete/channel-subscriptions", false)
@@ -236,6 +258,100 @@ func showInstallCloudHelp(p *Plugin, context *model.CommandArgs, args ...string)
 	})
 }
 
+func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+	if !utils.IsSystemAdmin(context.UserId) {
+		p.postCommandResponse(context, installOnlySystemAdmin)
+		return &model.CommandResponse{}
+	}
+
+	elements := []model.DialogElement{
+		{
+			DisplayName: configServerURL,
+			Name:        configServerURL,
+			Type:        "text",
+			Placeholder: "https://example.com",
+			HelpText:    "Please enter your Confluence Server URL",
+			Optional:    false,
+		},
+		{
+			DisplayName: configClientID,
+			Name:        configClientID,
+			Type:        "text",
+			Placeholder: configClientID,
+			HelpText:    "Please enter your Confluence OAuth Client ID",
+			Optional:    false,
+		},
+		{
+			DisplayName: configClientSecret,
+			Name:        configClientSecret,
+			Type:        "text",
+			Placeholder: configClientSecret,
+			HelpText:    "Please enter your Confluence OAuth Client Secret",
+			Optional:    false,
+		},
+	}
+
+	requestBody := model.OpenDialogRequest{
+		TriggerId: context.TriggerId,
+		URL:       fmt.Sprintf("%s/config/%s/%s", p.GetPluginURL(), context.ChannelId, context.UserId),
+		Dialog: model.Dialog{
+			Title:       configModalTitle,
+			CallbackId:  "callbackID",
+			SubmitLabel: "Submit",
+			Elements:    elements,
+		},
+	}
+
+	requestPayload, err := json.Marshal(requestBody)
+	if err != nil {
+		p.responsef(context, err.Error())
+	}
+
+	if _, err = http.Post(fmt.Sprintf(configAPIEndpoint, p.GetSiteURL()), "application/json", bytes.NewBuffer(requestPayload)); err != nil {
+		p.responsef(context, err.Error())
+	}
+	return &model.CommandResponse{}
+}
+
+func listConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+	page := 0
+	var configKeys []string
+	for {
+		keyList, err := p.API.KVList(page, configPerPage)
+		if err != nil {
+			return p.responsef(context, err.Error())
+		}
+
+		if len(keyList) == 0 {
+			break
+		}
+
+		var keys []string
+		testconfig := ""
+		for _, key := range keyList {
+			if strings.Contains(key, configKeyPrefix) {
+				keys = append(keys, key)
+				testconfig += key
+			}
+		}
+		configKeys = append(configKeys, keys...)
+		page++
+	}
+
+	if len(configKeys) == 0 {
+		p.postCommandResponse(context, noSavedConfig)
+		return &model.CommandResponse{}
+	}
+
+	confluenceConfig, err := p.instanceStore.LoadSavedConfigs(configKeys)
+	if err != nil {
+		return p.responsef(context, err.Error())
+	}
+
+	p.postCommandResponse(context, serializer.FormattedConfigList(confluenceConfig))
+	return &model.CommandResponse{}
+}
+
 func showInstallServerHelp(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
 	if !utils.IsSystemAdmin(context.UserId) {
 		p.postCommandResponse(context, installOnlySystemAdmin)
@@ -245,7 +361,7 @@ func showInstallServerHelp(p *Plugin, context *model.CommandArgs, args ...string
 		response := executeConfluenceDefault(p, context, args...)
 		return response
 	}
-	
+
 	confluenceURL, instance, err := p.installServerInstance(args[0])
 	if err != nil {
 		return p.responsef(context, err.Error())
