@@ -130,6 +130,9 @@ func (store mockInstanceStore) LoadInstanceConfig(string) (*serializer.Confluenc
 func (store mockInstanceStore) LoadSavedConfigs([]string) ([]*serializer.ConfluenceConfig, error) {
 	return []*serializer.ConfluenceConfig{}, nil
 }
+func (store mockInstanceStore) DeleteInstanceConfig(string) (error) {
+	return nil
+}
 
 type mockOTSStore struct{}
 

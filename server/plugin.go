@@ -49,9 +49,6 @@ type externalConfig struct {
 
 	// Comma separated list of confluence groups with permission. Empty is all.
 	GroupsAllowedToEditConfluenceSubscriptions string
-
-	ConfluenceConfig       []ServerConfig `json:"tokens"`
-	ParsedConfluenceConfig map[string]ServerConfig
 }
 
 type Config struct {
@@ -260,12 +257,6 @@ func (p *Plugin) OnInstall(c *plugin.Context, event model.OnInstallEvent) error 
 
 func (c *externalConfig) processConfiguration() error {
 	c.Secret = strings.TrimSpace(c.Secret)
-	parsedConfluenceConfig := make(map[string]ServerConfig)
-	for _, config := range c.ConfluenceConfig {
-		parsedConfluenceConfig[config.ServerURL] = config
-	}
-	c.ParsedConfluenceConfig = parsedConfluenceConfig
-
 	return nil
 }
 

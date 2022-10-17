@@ -74,6 +74,7 @@ var ConfluenceCommandHandler = Handler{
 		"help":           confluenceHelpCommand,
 		"config/add":     addConfig,
 		"config/list":    listConfig,
+		"config/delete":  deleteConfig,
 	},
 	defaultHandler: executeConfluenceDefault,
 }
@@ -155,14 +156,18 @@ func getAutoCompleteData() *model.AutocompleteData {
 	confluence.AddCommand(subscribe)
 
 	config := model.NewAutocompleteData("config", "", "Config related options for confluence instances")
-	configOptions := []model.AutocompleteListItem{{
-		HelpText: "Add config for the confluence instance",
-		Item:     "add",
-	}, {
-		HelpText: "List all the added configs",
-		Item:     "list",
-	}}
-	config.AddStaticListArgument("", false, configOptions)
+
+	addConfig := model.NewAutocompleteData("add", "", "Add config for the confluence instance")
+
+	listConfig := model.NewAutocompleteData("list", "", "List all the added configs")
+
+	deleteConfig := model.NewAutocompleteData("delete", "[instance]", "Add config for the confluence instance")
+	deleteConfig.AddDynamicListArgument("instance", "api/v1/autocomplete/configs", false)
+
+	config.AddCommand(addConfig)
+	config.AddCommand(listConfig)
+	config.AddCommand(deleteConfig)
+
 	confluence.AddCommand(config)
 
 	unsubscribe := model.NewAutocompleteData("unsubscribe", "[name]", "Unsubscribe the current channel from notifications associated with the given subscription name")
@@ -313,13 +318,13 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 	return &model.CommandResponse{}
 }
 
-func listConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+func (p *Plugin) GetConfigKeyList() ([]string, error) {
 	page := 0
 	var configKeys []string
 	for {
 		keyList, err := p.API.KVList(page, configPerPage)
 		if err != nil {
-			return p.responsef(context, err.Error())
+			return nil, err
 		}
 
 		if len(keyList) == 0 {
@@ -337,6 +342,19 @@ func listConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Co
 		configKeys = append(configKeys, keys...)
 		page++
 	}
+	return configKeys, nil
+}
+
+func listConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+	if !utils.IsSystemAdmin(context.UserId) {
+		p.postCommandResponse(context, installOnlySystemAdmin)
+		return &model.CommandResponse{}
+	}
+
+	configKeys, err := p.GetConfigKeyList()
+	if err != nil {
+		return p.responsef(context, err.Error())
+	}
 
 	if len(configKeys) == 0 {
 		p.postCommandResponse(context, noSavedConfig)
@@ -349,6 +367,22 @@ func listConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Co
 	}
 
 	p.postCommandResponse(context, serializer.FormattedConfigList(confluenceConfig))
+	return &model.CommandResponse{}
+}
+
+func deleteConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+	if !utils.IsSystemAdmin(context.UserId) {
+		p.postCommandResponse(context, installOnlySystemAdmin)
+		return &model.CommandResponse{}
+	}
+
+	instance := strings.Join(args, " ")
+
+	if err := p.instanceStore.DeleteInstanceConfig(instance); err != nil {
+		return p.responsef(context, err.Error())
+	}
+
+	p.postCommandResponse(context, fmt.Sprintf("Your config is deleted for confluence instance %s", instance))
 	return &model.CommandResponse{}
 }
 
@@ -462,7 +496,7 @@ func executeConnect(p *Plugin, context *model.CommandArgs, args ...string) *mode
 			"You already have a Confluence account linked to your Mattermost account from %s. Please use `/confluence disconnect --instance=%s` to disconnect.",
 			instanceID, instanceID)
 	}
-	if _, ok := p.getConfig().ParsedConfluenceConfig[confluenceURL]; !ok {
+	if _, err = p.instanceStore.LoadInstanceConfig(confluenceURL); err != nil {
 		return p.responsef(context, configNotFoundError, instanceID, instanceID)
 	}
 

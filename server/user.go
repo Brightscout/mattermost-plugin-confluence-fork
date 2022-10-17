@@ -248,7 +248,7 @@ func (p *Plugin) CompleteOAuth2(mattermostUserID, code, state string, instance I
 		ci := instance.(*cloudInstance)
 		ci.CloudID = cloudID
 		// Update the instance stored in the store
-		err = p.InstallInstance(ci)
+		err = p.InstallInstance(ci, true)
 		if err != nil {
 			return nil, nil, err
 		}
