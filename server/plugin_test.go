@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"bou.ke/monkey"
@@ -88,6 +89,219 @@ func TestExecuteCommand(t *testing.T) {
 			if val.patchAPICalls != nil {
 				val.patchAPICalls()
 			}
+
+			res, err := p.ExecuteCommand(&plugin.Context{}, val.commandArgs)
+			assert.Nil(t, err)
+			assert.NotNil(t, res)
+		})
+	}
+}
+
+func TestConfigCommand(t *testing.T) {
+	p := Plugin{}
+	mockAPI := &plugintest.API{}
+	p.API = mockAPI
+	for name, val := range map[string]struct {
+		commandArgs      *model.CommandArgs
+		ephemeralMessage string
+		isAdmin          bool
+	}{
+		"invalid config command": {
+			commandArgs:      &model.CommandArgs{Command: "/confluence config", UserId: userID, ChannelId: channelID},
+			ephemeralMessage: invalidCommand,
+			isAdmin:          false,
+		},
+		"admin restriction on config command": {
+			commandArgs:      &model.CommandArgs{Command: "/confluence config ", UserId: userID, ChannelId: channelID},
+			ephemeralMessage: installOnlySystemAdmin,
+			isAdmin:          false,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			defer monkey.UnpatchAll()
+			mockAPI := baseMock()
+
+			mockAPI.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Run(func(args mock.Arguments) {
+				post := args.Get(1).(*model.Post)
+				assert.Equal(t, val.ephemeralMessage, post.Message)
+			}).Once().Return(&model.Post{})
+
+			monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetSiteURL", func(_ *Plugin) string {
+				return "https://test.com"
+			})
+
+			monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetPluginURL", func(_ *Plugin) string {
+				return "https://test.com/api/v4/actions/dialogs/open"
+			})
+
+			roles := "system_user"
+			if val.isAdmin {
+				roles += " system_admin"
+			}
+
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: roles}, nil)
+
+			res, err := p.ExecuteCommand(&plugin.Context{}, val.commandArgs)
+			assert.Nil(t, err)
+			assert.NotNil(t, res)
+		})
+	}
+}
+
+func TestConfigAddCommand(t *testing.T) {
+	p := Plugin{}
+	mockAPI := &plugintest.API{}
+	p.API = mockAPI
+	for name, val := range map[string]struct {
+		commandArgs      *model.CommandArgs
+		ephemeralMessage string
+		isAdmin          bool
+	}{
+		"admin restriction on config add command": {
+			commandArgs:      &model.CommandArgs{Command: "/confluence config \"add\"", UserId: userID, ChannelId: channelID},
+			ephemeralMessage: installOnlySystemAdmin,
+			isAdmin:          false,
+		},
+		"config add command": {
+			commandArgs: &model.CommandArgs{Command: "/confluence config \"add\"", UserId: userID, ChannelId: channelID},
+			isAdmin:     true,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			defer monkey.UnpatchAll()
+			mockAPI := baseMock()
+
+			mockAPI.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Run(func(args mock.Arguments) {
+				post := args.Get(1).(*model.Post)
+				if val.ephemeralMessage != "" {
+					assert.Equal(t, val.ephemeralMessage, post.Message)
+				}
+			}).Once().Return(&model.Post{})
+
+			roles := "system_user"
+			if val.isAdmin {
+				roles += " system_admin"
+			}
+
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: roles}, nil)
+
+			res, err := p.ExecuteCommand(&plugin.Context{}, val.commandArgs)
+			assert.Nil(t, err)
+			assert.NotNil(t, res)
+		})
+	}
+}
+
+func TestConfigListCommands(t *testing.T) {
+	p := Plugin{}
+	mockAPI := &plugintest.API{}
+	p.API = mockAPI
+	p.instanceStore = p.getMockInstanceStoreKV(1)
+	for name, val := range map[string]struct {
+		commandArgs      *model.CommandArgs
+		ephemeralMessage string
+		isAdmin          bool
+		patchAPICalls    func()
+	}{
+		"admin restriction on config list command": {
+			commandArgs:      &model.CommandArgs{Command: "/confluence config ", UserId: userID, ChannelId: channelID},
+			ephemeralMessage: installOnlySystemAdmin,
+			isAdmin:          false,
+		},
+		"config list command no config saved": {
+			commandArgs:      &model.CommandArgs{Command: "/confluence config \"list\"", UserId: userID, ChannelId: channelID},
+			ephemeralMessage: noSavedConfig,
+			isAdmin:          true,
+			patchAPICalls: func() {
+				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
+					return []string{}, nil
+				})
+			},
+		},
+		"config list command": {
+			commandArgs: &model.CommandArgs{Command: "/confluence config \"list\"", UserId: userID, ChannelId: channelID},
+			isAdmin:     true,
+			patchAPICalls: func() {
+				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
+					return []string{
+						"https://test.com",
+					}, nil
+				})
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			defer monkey.UnpatchAll()
+			mockAPI := baseMock()
+
+			mockAPI.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Run(func(args mock.Arguments) {
+				post := args.Get(1).(*model.Post)
+				if val.ephemeralMessage != "" {
+					assert.Equal(t, val.ephemeralMessage, post.Message)
+				}
+			}).Once().Return(&model.Post{})
+
+			roles := "system_user"
+			if val.isAdmin {
+				roles += " system_admin"
+			}
+
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: roles}, nil)
+			if val.patchAPICalls != nil {
+				val.patchAPICalls()
+			}
+
+			res, err := p.ExecuteCommand(&plugin.Context{}, val.commandArgs)
+			assert.Nil(t, err)
+			assert.NotNil(t, res)
+		})
+	}
+}
+
+func TestConfigDeleteCommands(t *testing.T) {
+	p := Plugin{}
+	mockAPI := &plugintest.API{}
+	p.API = mockAPI
+	p.instanceStore = p.getMockInstanceStoreKV(1)
+	for name, val := range map[string]struct {
+		commandArgs      *model.CommandArgs
+		ephemeralMessage string
+		isAdmin          bool
+	}{
+		"admin restriction on config delete command": {
+			commandArgs:      &model.CommandArgs{Command: "/confluence config \"delete\"", UserId: userID, ChannelId: channelID},
+			ephemeralMessage: installOnlySystemAdmin,
+			isAdmin:          false,
+		},
+		"config delete command": {
+			commandArgs:      &model.CommandArgs{Command: "/confluence config \"delete\" \"https://test.com\" ", UserId: userID, ChannelId: channelID},
+			ephemeralMessage: "Your config is deleted for confluence instance https://test.com",
+			isAdmin:          true,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			defer monkey.UnpatchAll()
+			mockAPI := baseMock()
+
+			mockAPI.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Run(func(args mock.Arguments) {
+				post := args.Get(1).(*model.Post)
+				assert.Equal(t, val.ephemeralMessage, post.Message)
+			}).Once().Return(&model.Post{})
+
+			monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetSiteURL", func(_ *Plugin) string {
+				return "https://test.com"
+			})
+
+			monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetPluginURL", func(_ *Plugin) string {
+				return "https://test.com/api/v4/actions/dialogs/open"
+			})
+
+			roles := "system_user"
+			if val.isAdmin {
+				roles += " system_admin"
+			}
+
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: roles}, nil)
 
 			res, err := p.ExecuteCommand(&plugin.Context{}, val.commandArgs)
 			assert.Nil(t, err)
