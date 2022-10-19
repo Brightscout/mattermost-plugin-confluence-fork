@@ -158,6 +158,7 @@ func getAutoCompleteData() *model.AutocompleteData {
 	config := model.NewAutocompleteData("config", "", "Config related options for confluence instances")
 
 	addConfig := model.NewAutocompleteData("add", "", "Add config for the confluence instance")
+	addConfig.AddTextArgument("Confluence URL", "Enter the Confluence URL, e.g. https://mattermost.atlassian.net", "")
 
 	listConfig := model.NewAutocompleteData("list", "", "List all the added configs")
 
@@ -269,11 +270,17 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 		return &model.CommandResponse{}
 	}
 
+	var defaultServerURL string
+	if len(args) != 0 {
+		defaultServerURL = args[0]
+	}
+
 	elements := []model.DialogElement{
 		{
 			DisplayName: configServerURL,
 			Name:        configServerURL,
 			Type:        "text",
+			Default:     defaultServerURL,
 			Placeholder: "https://example.com",
 			HelpText:    "Please enter your Confluence Server URL",
 			Optional:    false,
