@@ -159,7 +159,7 @@ func getAutoCompleteData() *model.AutocompleteData {
 		HelpText: "Add config for the confluence instance",
 		Item:     "add",
 	}, {
-		HelpText: "List all the added configs",
+		HelpText: "List all the saved configs",
 		Item:     "list",
 	}}
 	config.AddStaticListArgument("", false, configOptions)
@@ -310,6 +310,7 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 	if _, err = http.Post(fmt.Sprintf(configAPIEndpoint, p.GetSiteURL()), "application/json", bytes.NewBuffer(requestPayload)); err != nil {
 		p.responsef(context, err.Error())
 	}
+
 	return &model.CommandResponse{}
 }
 
@@ -334,6 +335,7 @@ func listConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Co
 				testconfig += key
 			}
 		}
+
 		configKeys = append(configKeys, keys...)
 		page++
 	}

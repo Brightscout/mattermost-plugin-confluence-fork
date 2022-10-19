@@ -20,8 +20,10 @@ func FormattedConfigList(confluenceConfigs []*ConfluenceConfig) string {
 	for _, config := range confluenceConfigs {
 		configs += config.GetFormattedConfig()
 	}
+
 	if configs != "" {
 		list = "#### Active Configurations \n" + configsHeader + configs
 	}
+	
 	return list
 }
