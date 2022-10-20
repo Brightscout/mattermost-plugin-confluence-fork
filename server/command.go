@@ -157,8 +157,8 @@ func getAutoCompleteData() *model.AutocompleteData {
 
 	config := model.NewAutocompleteData("config", "", "Config related options for confluence instances")
 
-	addConfig := model.NewAutocompleteData("add", "", "Add config for the confluence instance")
-	addConfig.AddTextArgument("Confluence URL", "Enter the Confluence URL, e.g. https://mattermost.atlassian.net", "")
+	addConfig := model.NewAutocompleteData("add", "[instance]", "Add config for the confluence instance")
+	addConfig.AddDynamicListArgument("instance", "api/v1/autocomplete/installed-instances", false)
 
 	listConfig := model.NewAutocompleteData("list", "", "List all the added configs")
 
