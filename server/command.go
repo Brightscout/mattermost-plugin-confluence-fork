@@ -159,7 +159,7 @@ func getAutoCompleteData() *model.AutocompleteData {
 		HelpText: "Add config for the confluence instance",
 		Item:     "add",
 	}, {
-		HelpText: "List all the saved configs",
+		HelpText: "List saved configs",
 		Item:     "list",
 	}}
 	config.AddStaticListArgument("", false, configOptions)

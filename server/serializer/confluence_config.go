@@ -16,14 +16,14 @@ func (c ConfluenceConfig) GetFormattedConfig() string {
 
 func FormattedConfigList(confluenceConfigs []*ConfluenceConfig) string {
 	var configs, list string
-	configsHeader := "| Server Url | Client Id | Client Secret |\n| :----|:--------| :--------|"
+	configHeader := "| Server URL | Client ID | Client Secret |\n| :----|:--------| :--------|"
 	for _, config := range confluenceConfigs {
 		configs += config.GetFormattedConfig()
 	}
 
 	if configs != "" {
-		list = "#### Active Configurations \n" + configsHeader + configs
+		list = "#### Active Configurations \n" + configHeader + configs
 	}
-	
+
 	return list
 }
