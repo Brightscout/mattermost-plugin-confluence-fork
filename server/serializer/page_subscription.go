@@ -83,6 +83,14 @@ func (ps PageSubscription) GetFormattedSubscription() string {
 	return fmt.Sprintf("\n|%s|%s|%s|%s|", ps.Alias, ps.BaseURL, ps.PageID, strings.Join(events, ", "))
 }
 
+func (ps PageSubscription) GetOldFormattedSubscription() string {
+	var events []string
+	for _, event := range ps.Events {
+		events = append(events, eventDisplayName[event])
+	}
+	return fmt.Sprintf("\n|%s|%s|%s|%s|%s|", ps.Alias, ps.BaseURL, ps.PageID, ps.ChannelID, strings.Join(events, ", "))
+}
+
 func (ps PageSubscription) IsValid() error {
 	if ps.Alias == "" {
 		return errors.New("subscription name can not be empty")

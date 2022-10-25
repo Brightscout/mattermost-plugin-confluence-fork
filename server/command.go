@@ -75,6 +75,7 @@ var ConfluenceCommandHandler = Handler{
 		"config/add":     addConfig,
 		"config/list":    listConfig,
 		"config/delete":  deleteConfig,
+		"migrate/list":   listOldSubscriptions,
 	},
 	defaultHandler: executeConfluenceDefault,
 }
@@ -177,6 +178,14 @@ func getAutoCompleteData() *model.AutocompleteData {
 
 	help := model.NewAutocompleteData("help", "", "Show confluence slash command help")
 	confluence.AddCommand(help)
+
+	migrate := model.NewAutocompleteData("migrate", "", "Migrate your subscriptions to newer version of confluence plugin")
+	migrateItems := []model.AutocompleteListItem{{
+		HelpText: "List all the old subscriptions to be migrated",
+		Item:     "list",
+	}}
+	migrate.AddStaticListArgument("", false, migrateItems)
+	confluence.AddCommand(migrate)
 	return confluence
 }
 
@@ -393,6 +402,23 @@ func deleteConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.
 	return &model.CommandResponse{}
 }
 
+func listOldSubscriptions(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+	oldSubscriptions, gErr := service.GetOldSubscriptions()
+	if gErr != nil {
+		p.postCommandResponse(context, gErr.Error())
+		return &model.CommandResponse{}
+	}
+
+	if len(oldSubscriptions) == 0 {
+		p.postCommandResponse(context, noChannelSubscription)
+		return &model.CommandResponse{}
+	}
+
+	list := serializer.FormattedOldSubscriptionList(oldSubscriptions)
+	p.postCommandResponse(context, list)
+	return &model.CommandResponse{}
+}
+
 func showInstallServerHelp(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
 	if !utils.IsSystemAdmin(context.UserId) {
 		p.postCommandResponse(context, installOnlySystemAdmin)
@@ -447,6 +473,7 @@ func listChannelSubscription(p *Plugin, context *model.CommandArgs, args ...stri
 func confluenceHelpCommand(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
 	helpText := getFullHelpText(p, context, args...)
 
+	p.API.KVDeleteAll()
 	p.postCommandResponse(context, helpText)
 	return &model.CommandResponse{}
 }

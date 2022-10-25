@@ -50,6 +50,7 @@ type Subscription interface {
 	GetChannelID() string
 	GetUserID() string
 	GetFormattedSubscription() string
+	GetOldFormattedSubscription() string
 	IsValid() error
 	ValidateSubscription(*Subscriptions) error
 }
@@ -70,6 +71,20 @@ type Subscriptions struct {
 	ByURLPageID   map[string]StringStringArrayMap
 	ByURLSpaceKey map[string]StringStringArrayMap
 	BySpaceID     map[string]string
+}
+
+type OldSubscriptions struct {
+	ByChannelID   map[string]StringSubscription
+	ByURLPagID    map[string]StringArrayMap
+	ByURLSpaceKey map[string]StringArrayMap
+}
+
+func NewOldSubscriptions() *OldSubscriptions {
+	return &OldSubscriptions{
+		ByChannelID:   map[string]StringSubscription{},
+		ByURLPagID:    map[string]StringArrayMap{},
+		ByURLSpaceKey: map[string]StringArrayMap{},
+	}
 }
 
 func NewSubscriptions() *Subscriptions {
@@ -145,6 +160,19 @@ func SubscriptionsFromJSON(bytes []byte) (*Subscriptions, error) {
 	return subs, nil
 }
 
+func OldSubscriptionsFromJSON(bytes []byte) (*OldSubscriptions, error) {
+	var subs *OldSubscriptions
+	if len(bytes) != 0 {
+		unmarshalErr := json.Unmarshal(bytes, &subs)
+		if unmarshalErr != nil {
+			return nil, unmarshalErr
+		}
+	} else {
+		subs = NewOldSubscriptions()
+	}
+	return subs, nil
+}
+
 func FormattedSubscriptionList(channelSubscriptions StringSubscription) string {
 	var pageSubscriptions, spaceSubscriptions, list string
 	pageSubscriptionsHeader := "| Name | Base Url | Page Id | Events|\n| :----|:--------| :--------| :-----|"
@@ -154,6 +182,29 @@ func FormattedSubscriptionList(channelSubscriptions StringSubscription) string {
 			pageSubscriptions += sub.GetFormattedSubscription()
 		} else if sub.Name() == SubscriptionTypeSpace {
 			spaceSubscriptions += sub.GetFormattedSubscription()
+		}
+	}
+	if spaceSubscriptions != "" {
+		list = "#### Space Subscriptions \n" + spaceSubscriptionsHeader + spaceSubscriptions
+	}
+	if spaceSubscriptions != "" && pageSubscriptions != "" {
+		list += "\n\n"
+	}
+	if pageSubscriptions != "" {
+		list += "#### Page Subscriptions \n" + pageSubscriptionsHeader + pageSubscriptions
+	}
+	return list
+}
+
+func FormattedOldSubscriptionList(subscriptions []Subscription) string {
+	var pageSubscriptions, spaceSubscriptions, list string
+	pageSubscriptionsHeader := "| Name | Base Url | Page Id | Channel Id | Events|\n| :----|:--------| :--------| :-----|"
+	spaceSubscriptionsHeader := "| Name | Base Url | Space Key | Channel Id | Events|\n| :----|:--------| :--------| :-----|"
+	for _, sub := range subscriptions {
+		if sub.Name() == SubscriptionTypePage {
+			pageSubscriptions += sub.GetOldFormattedSubscription()
+		} else if sub.Name() == SubscriptionTypeSpace {
+			spaceSubscriptions += sub.GetOldFormattedSubscription()
 		}
 	}
 	if spaceSubscriptions != "" {

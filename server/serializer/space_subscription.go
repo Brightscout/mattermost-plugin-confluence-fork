@@ -82,6 +82,14 @@ func (ss SpaceSubscription) GetFormattedSubscription() string {
 	return fmt.Sprintf("\n|%s|%s|%s|%s|", ss.Alias, ss.BaseURL, ss.SpaceKey, strings.Join(events, ", "))
 }
 
+func (ss SpaceSubscription) GetOldFormattedSubscription() string {
+	var events []string
+	for _, event := range ss.Events {
+		events = append(events, eventDisplayName[event])
+	}
+	return fmt.Sprintf("\n|%s|%s|%s|%s|%s|", ss.Alias, ss.BaseURL, ss.SpaceKey, ss.ChannelID, strings.Join(events, ", "))
+}
+
 func (ss SpaceSubscription) IsValid() error {
 	if ss.Alias == "" {
 		return errors.New("subscription name can not be empty")
