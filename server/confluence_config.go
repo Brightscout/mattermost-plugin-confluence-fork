@@ -20,8 +20,8 @@ func (p *Plugin) handleConfluenceConfig(w http.ResponseWriter, r *http.Request) 
 	channelID := pathParams[ParamChannelID]
 	userID := pathParams[ParamUserID]
 	if !model.IsValidId(channelID) || !model.IsValidId(userID) {
-		http.Error(w, "invalid channel or user id", http.StatusBadRequest)
-		p.API.LogError("invalid channel or user id")
+		http.Error(w, "Invalid channel or user id", http.StatusBadRequest)
+		p.API.LogError("Invalid channel or user id")
 		return
 	}
 
