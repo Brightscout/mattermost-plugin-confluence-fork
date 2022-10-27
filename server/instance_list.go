@@ -13,13 +13,15 @@ func (p *Plugin) handleGetInstanceList(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	out := []model.AutocompleteListItem{}
 	for _, ID := range instances.IDs() {
 		out = append(out, model.AutocompleteListItem{
 			Item: ID.String(),
 		})
 	}
-	b, _ := json.Marshal(out)
+
+	response, _ := json.Marshal(out)
 	w.Header().Set("Content-Type", "application/json")
-	_, _ = w.Write(b)
+	_, _ = w.Write(response)
 }
