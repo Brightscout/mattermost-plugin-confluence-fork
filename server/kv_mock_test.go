@@ -121,15 +121,19 @@ func (store mockInstanceStore) StoreInstance(instance Instance) error {
 func (store mockInstanceStore) StoreInstances(*Instances) error {
 	return nil
 }
+
 func (store mockInstanceStore) StoreInstanceConfig(*serializer.ConfluenceConfig) error {
 	return nil
 }
+
 func (store mockInstanceStore) LoadInstanceConfig(string) (*serializer.ConfluenceConfig, error) {
 	return &serializer.ConfluenceConfig{}, nil
 }
+
 func (store mockInstanceStore) LoadSavedConfigs([]string) ([]*serializer.ConfluenceConfig, error) {
 	return []*serializer.ConfluenceConfig{}, nil
 }
+
 func (store mockInstanceStore) DeleteInstanceConfig(string) error {
 	return nil
 }

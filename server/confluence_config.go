@@ -10,10 +10,14 @@ import (
 	"github.com/mattermost/mattermost-server/v6/model"
 )
 
+const (
+	ParamUserID = "userID"
+)
+
 func (p *Plugin) handleConfluenceConfig(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
-	channelID := pathParams["channelID"]
-	userID := pathParams["userID"]
+	channelID := pathParams[ParamChannelID]
+	userID := pathParams[ParamUserID]
 	decoder := json.NewDecoder(r.Body)
 	submitRequest := &model.SubmitDialogRequest{}
 	if err := decoder.Decode(&submitRequest); err != nil {
