@@ -272,7 +272,7 @@ func (store *store) DeleteInstanceConfig(instanceID string) (returnErr error) {
 			return
 		}
 		returnErr = errors.WithMessage(returnErr,
-			fmt.Sprintf("failed to delete config for instance:%s", instanceID))
+			fmt.Sprintf("failed to delete config for instance: %s", instanceID))
 	}()
 	if appErr := store.plugin.API.KVDelete(keyWithInstanceIDForConfig(instanceID)); appErr != nil {
 		return appErr

@@ -379,7 +379,6 @@ func deleteConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.
 	}
 
 	instance := strings.Join(args, " ")
-
 	if err := p.instanceStore.DeleteInstanceConfig(instance); err != nil {
 		return p.responsef(context, err.Error())
 	}
