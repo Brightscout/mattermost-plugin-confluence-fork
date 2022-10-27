@@ -16,11 +16,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	validUserID    = "iu73atknztnctef8b8ey9gm6zc"
-	validChannelID = "tgniw3kmrjd93qns11cboditme"
-)
-
 func TestHandleConfluenceConfig(t *testing.T) {
 	tests := map[string]struct {
 		method         string
@@ -57,6 +52,8 @@ func TestHandleConfluenceConfig(t *testing.T) {
 		"wrong api method": {
 			method:     http.MethodGet,
 			statusCode: http.StatusMethodNotAllowed,
+			userID:     "iu73atknztnctef8b8ey9gm6zc",
+			channelID:  "tgniw3kmrjd93qns11cboditme",
 		},
 		"invalid body": {
 			method:     http.MethodPost,
@@ -77,7 +74,7 @@ func TestHandleConfluenceConfig(t *testing.T) {
 			statusCode: http.StatusBadRequest,
 			body:       `{`,
 			userID:     "mock-userID",
-			channelID:  "mock-channelID",
+			channelID:  "mockChannelID",
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
 					return []string{
@@ -114,7 +111,7 @@ func TestHandleConfluenceConfig(t *testing.T) {
 				tc.patchFuncCalls()
 			}
 
-			request := httptest.NewRequest(tc.method, fmt.Sprintf("/api/v1/config/%s/%s", validUserID, validUserID), bytes.NewBufferString(tc.body))
+			request := httptest.NewRequest(tc.method, fmt.Sprintf("/api/v1/config/%s/%s", tc.channelID, tc.userID), bytes.NewBufferString(tc.body))
 
 			request.Header.Set(config.HeaderMattermostUserID, "test-user")
 			w := httptest.NewRecorder()
