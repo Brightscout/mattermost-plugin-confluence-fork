@@ -235,10 +235,10 @@ func (store *store) StoreInstanceConfig(config *serializer.ConfluenceConfig) (re
 			fmt.Sprintf("failed to store config, Confluence Instance:%s", config.ServerURL))
 	}()
 
-	err := store.set(keyWithInstanceIDForConfig(config.ServerURL), config)
-	if err != nil {
+	if err := store.set(keyWithInstanceIDForConfig(config.ServerURL), config); err != nil {
 		return err
 	}
+
 	store.plugin.debugf("Stored: config for instance, keys:\n\t %s:", keyWithInstanceIDForConfig(config.ServerURL))
 	return nil
 }
@@ -249,6 +249,7 @@ func (store *store) LoadInstanceConfig(instanceID string) (*serializer.Confluenc
 		return nil, errors.Wrapf(err,
 			"failed to load config for Confluence instance:%q", instanceID)
 	}
+
 	return &config, nil
 }
 
@@ -258,8 +259,7 @@ func (store *store) LoadSavedConfigs(configKeys []string) ([]*serializer.Conflue
 	for _, configKey := range configKeys {
 		var config serializer.ConfluenceConfig
 		if err := store.get(configKey, &config); err != nil {
-			return nil, errors.Wrapf(err,
-				"failed to load config for Confluence instance key:%q", configKey)
+			return nil, errors.Wrapf(err, "failed to load config for Confluence instance key:%q", configKey)
 		}
 		configs = append(configs, &config)
 	}

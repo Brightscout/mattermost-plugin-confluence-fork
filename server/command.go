@@ -315,6 +315,7 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 	if _, err = http.Post(fmt.Sprintf(configAPIEndpoint, p.GetSiteURL()), "application/json", bytes.NewBuffer(requestPayload)); err != nil {
 		p.responsef(context, err.Error())
 	}
+
 	return &model.CommandResponse{}
 }
 
@@ -339,6 +340,7 @@ func (p *Plugin) GetConfigKeyList() ([]string, error) {
 				testconfig += key
 			}
 		}
+
 		configKeys = append(configKeys, keys...)
 		page++
 	}
