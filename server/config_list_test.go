@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -12,6 +14,7 @@ import (
 	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/mattermost/mattermost-server/v6/plugin/plugintest/mock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestHandleGetConfigList(t *testing.T) {
@@ -19,6 +22,7 @@ func TestHandleGetConfigList(t *testing.T) {
 		method         string
 		statusCode     int
 		patchFuncCalls func()
+		resp           []model.AutocompleteListItem
 	}{
 		"success": {
 			method:     http.MethodGet,
@@ -30,6 +34,11 @@ func TestHandleGetConfigList(t *testing.T) {
 					}, nil
 				})
 			},
+			resp: []model.AutocompleteListItem{
+				{
+					Item: "https://test.com",
+				},
+			},
 		},
 		"wrong api method": {
 			method:     http.MethodPost,
@@ -38,13 +47,11 @@ func TestHandleGetConfigList(t *testing.T) {
 	}
 	mockAPI := baseMock()
 	mockAPI.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
-
 	mockAPI.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
+	mockAPI.On("GetBundlePath").Return("/test/testBundlePath", nil)
 
 	p := Plugin{}
 	p.SetAPI(mockAPI)
-
-	mockAPI.On("GetBundlePath").Return("/test/testBundlePath", nil)
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -60,6 +67,16 @@ func TestHandleGetConfigList(t *testing.T) {
 			request.Header.Set(config.HeaderMattermostUserID, "test-user")
 			w := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, w, request)
+
+			bodyBytes, err := ioutil.ReadAll(w.Body)
+			require.Nil(t, err)
+			out := []model.AutocompleteListItem{}
+			if tc.statusCode == http.StatusOK {
+				err = json.Unmarshal(bodyBytes, &out)
+				require.Nil(t, err)
+				assert.Equal(t, out, tc.resp)
+			}
+
 			assert.Equal(t, tc.statusCode, w.Result().StatusCode)
 		})
 	}
