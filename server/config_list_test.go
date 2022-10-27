@@ -46,8 +46,8 @@ func TestHandleGetConfigList(t *testing.T) {
 		},
 	}
 	mockAPI := baseMock()
-	mockAPI.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
-	mockAPI.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
+	mockAPI.On("LogError", mockAnythingOfTypeBatch("string", 13)...)
+	mockAPI.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...)
 	mockAPI.On("GetBundlePath").Return("/test/testBundlePath", nil)
 
 	p := Plugin{}
