@@ -87,17 +87,14 @@ func TestHandleConfluenceConfig(t *testing.T) {
 	}
 	mockAPI := baseMock()
 	mockAPI.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
-
 	mockAPI.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
+	mockAPI.On("GetBundlePath").Return("/test/testBundlePath", nil)
 
 	p := Plugin{}
 	p.SetAPI(mockAPI)
 
-	mockAPI.On("GetBundlePath").Return("/test/testBundlePath", nil)
-
 	p.userStore = getMockUserStoreKV()
 	p.instanceStore = p.getMockInstanceStoreKV(1)
-
 	p.otsStore = p.getMockOTSStoreKV()
 
 	for name, tc := range tests {
@@ -105,7 +102,6 @@ func TestHandleConfluenceConfig(t *testing.T) {
 			defer monkey.UnpatchAll()
 
 			mockAPI.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Once().Return(&model.Post{})
-
 			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: "system_admin"}, nil)
 
 			if tc.patchFuncCalls != nil {
@@ -113,7 +109,6 @@ func TestHandleConfluenceConfig(t *testing.T) {
 			}
 
 			request := httptest.NewRequest(tc.method, fmt.Sprintf("/api/v1/config/%s/%s", tc.channelID, tc.userID), bytes.NewBufferString(tc.body))
-
 			request.Header.Set(config.HeaderMattermostUserID, "test-user")
 			w := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, w, request)
