@@ -274,8 +274,7 @@ func (store *store) DeleteInstanceConfig(instanceID string) (returnErr error) {
 		returnErr = errors.WithMessage(returnErr,
 			fmt.Sprintf("failed to delete config for instance:%s", instanceID))
 	}()
-	appErr := store.plugin.API.KVDelete(keyWithInstanceIDForConfig(instanceID))
-	if appErr != nil {
+	if appErr := store.plugin.API.KVDelete(keyWithInstanceIDForConfig(instanceID)); appErr != nil {
 		return appErr
 	}
 	store.plugin.debugf("Deleted: config for instance, keys:\n\t %s:", keyWithInstanceIDForConfig(instanceID))

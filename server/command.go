@@ -161,7 +161,7 @@ func getAutoCompleteData() *model.AutocompleteData {
 
 	listConfig := model.NewAutocompleteData("list", "", "List all the added configs")
 
-	deleteConfig := model.NewAutocompleteData("delete", "[instance]", "Add config for the confluence instance")
+	deleteConfig := model.NewAutocompleteData("delete", "[instance]", "Delete config for the confluence instance")
 	deleteConfig.AddDynamicListArgument("instance", "api/v1/autocomplete/configs", false)
 
 	config.AddCommand(addConfig)
