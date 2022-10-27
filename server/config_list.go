@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/mattermost/mattermost-plugin-confluence/server/utils"
 	"github.com/mattermost/mattermost-server/v6/model"
+
+	"github.com/mattermost/mattermost-plugin-confluence/server/utils"
 )
 
 const paramUserID = "user_id"

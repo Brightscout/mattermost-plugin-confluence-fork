@@ -319,9 +319,11 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 		p.responsef(context, err.Error())
 	}
 
-	if _, err = http.Post(fmt.Sprintf(configAPIEndpoint, p.GetSiteURL()), "application/json", bytes.NewBuffer(requestPayload)); err != nil {
+	resp, err := http.Post(fmt.Sprintf(configAPIEndpoint, p.GetSiteURL()), "application/json", bytes.NewBuffer(requestPayload))
+	if err != nil {
 		p.responsef(context, err.Error())
 	}
+	resp.Body.Close()
 
 	return &model.CommandResponse{}
 }

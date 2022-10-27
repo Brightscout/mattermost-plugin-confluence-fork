@@ -37,7 +37,7 @@ func TestHandleConfluenceConfig(t *testing.T) {
 					"Client Secret": "mock-ClientSecret",
 					"Server URL": "https://test.com"
 				},
-				"cancelled": false
+				"canceled": false
 			}`,
 			userID:    "iu73atknztnctef8b8ey9gm6zc",
 			channelID: "tgniw3kmrjd93qns11cboditme",
