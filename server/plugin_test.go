@@ -163,7 +163,7 @@ func TestConfigAddCommand(t *testing.T) {
 			isAdmin:          false,
 		},
 		"config add command": {
-			commandArgs: &model.CommandArgs{Command: "/confluence config \"add\"", UserId: userID, ChannelId: channelID},
+			commandArgs: &model.CommandArgs{Command: "/confluence config \"add https://example.com\"", UserId: userID, ChannelId: channelID},
 			isAdmin:     true,
 		},
 	} {
