@@ -18,11 +18,17 @@ func (p *Plugin) handleConfluenceConfig(w http.ResponseWriter, r *http.Request) 
 	pathParams := mux.Vars(r)
 	channelID := pathParams[ParamChannelID]
 	userID := pathParams[ParamUserID]
+	if !model.IsValidId(channelID) || !model.IsValidId(userID) {
+		http.Error(w, "invalid channel or user id", http.StatusBadRequest)
+		p.API.LogError("invalid channel or user id")
+		return
+	}
+
 	decoder := json.NewDecoder(r.Body)
 	submitRequest := &model.SubmitDialogRequest{}
 	if err := decoder.Decode(&submitRequest); err != nil {
 		p.API.LogError("Error decoding SubmitDialogRequest.", "Error", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
