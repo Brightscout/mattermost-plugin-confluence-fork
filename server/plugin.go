@@ -35,12 +35,6 @@ const (
 
 var regexNonAlphaNum = regexp.MustCompile("[^a-zA-Z0-9]+")
 
-type ServerConfig struct {
-	ServerURL    string `json:"serverURL"`
-	ClientID     string `json:"clientID"`
-	ClientSecret string `json:"clientSecret"`
-}
-
 type externalConfig struct {
 	Secret string `json:"Secret"`
 
@@ -175,10 +169,7 @@ func (p *Plugin) OnConfigurationChange() error {
 		return err
 	}
 
-	if err := ec.processConfiguration(); err != nil {
-		p.API.LogError("Error in ProcessConfiguration.", "Error", err.Error())
-		return err
-	}
+	ec.processConfiguration()
 
 	if err := ec.isValid(); err != nil {
 		p.API.LogError("Error in Validating Configuration.", "Error", err.Error())
@@ -255,9 +246,8 @@ func (p *Plugin) OnInstall(c *plugin.Context, event model.OnInstallEvent) error 
 	return nil
 }
 
-func (c *externalConfig) processConfiguration() error {
+func (c *externalConfig) processConfiguration() {
 	c.Secret = strings.TrimSpace(c.Secret)
-	return nil
 }
 
 func (c *externalConfig) isValid() error {

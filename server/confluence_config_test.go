@@ -9,16 +9,12 @@ import (
 	"testing"
 
 	"bou.ke/monkey"
-	"github.com/mattermost/mattermost-plugin-confluence/server/config"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/mattermost/mattermost-server/v6/plugin/plugintest/mock"
 	"github.com/stretchr/testify/assert"
-)
 
-const (
-	validUserID    = "iu73atknztnctef8b8ey9gm6zc"
-	validChannelID = "tgniw3kmrjd93qns11cboditme"
+	"github.com/mattermost/mattermost-plugin-confluence/server/config"
 )
 
 func TestHandleConfluenceConfig(t *testing.T) {
@@ -26,6 +22,8 @@ func TestHandleConfluenceConfig(t *testing.T) {
 		method         string
 		statusCode     int
 		body           string
+		userID         string
+		channelID      string
 		patchFuncCalls func()
 	}{
 		"success": {
@@ -36,12 +34,14 @@ func TestHandleConfluenceConfig(t *testing.T) {
 				"callback_id": "callbackID",
 				"state": "", 
 				"submission": {
-					"Client ID": "pppppppppp",
-					"Client Secret": "pppppppppp",
-					"Server URL": "ppppppppp"
+					"Client ID": "mock-ClientID",
+					"Client Secret": "mock-ClientSecret",
+					"Server URL": "https://test.com"
 				},
-				"cancelled": false
+				"canceled": false
 			}`,
+			userID:    "iu73atknztnctef8b8ey9gm6zc",
+			channelID: "tgniw3kmrjd93qns11cboditme",
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
 					return []string{
@@ -53,11 +53,15 @@ func TestHandleConfluenceConfig(t *testing.T) {
 		"wrong api method": {
 			method:     http.MethodGet,
 			statusCode: http.StatusMethodNotAllowed,
+			userID:     "iu73atknztnctef8b8ey9gm6zc",
+			channelID:  "tgniw3kmrjd93qns11cboditme",
 		},
 		"invalid body": {
 			method:     http.MethodPost,
-			statusCode: http.StatusInternalServerError,
+			statusCode: http.StatusBadRequest,
 			body:       `{`,
+			userID:     "iu73atknztnctef8b8ey9gm6zc",
+			channelID:  "tgniw3kmrjd93qns11cboditme",
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
 					return []string{
@@ -68,8 +72,10 @@ func TestHandleConfluenceConfig(t *testing.T) {
 		},
 		"invalid userID or channelID": {
 			method:     http.MethodPost,
-			statusCode: http.StatusInternalServerError,
+			statusCode: http.StatusBadRequest,
 			body:       `{`,
+			userID:     "mock-userID",
+			channelID:  "mockChannelID",
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
 					return []string{
@@ -106,7 +112,7 @@ func TestHandleConfluenceConfig(t *testing.T) {
 				tc.patchFuncCalls()
 			}
 
-			request := httptest.NewRequest(tc.method, fmt.Sprintf("/api/v1/config/%s/%s", validUserID, validUserID), bytes.NewBufferString(tc.body))
+			request := httptest.NewRequest(tc.method, fmt.Sprintf("/api/v1/config/%s/%s", tc.channelID, tc.userID), bytes.NewBufferString(tc.body))
 
 			request.Header.Set(config.HeaderMattermostUserID, "test-user")
 			w := httptest.NewRecorder()

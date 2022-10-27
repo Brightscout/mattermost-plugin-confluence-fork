@@ -31,8 +31,7 @@ func (p *Plugin) installCloudInstance(rawURL string) (string, *cloudInstance, er
 		InstanceCommon: newInstanceCommon(p, CloudInstanceType, types.ID(confluenceURL)),
 	}
 
-	err = p.InstallInstance(instance, false)
-	if err != nil {
+	if err = p.InstallInstance(instance, false); err != nil {
 		return "", nil, err
 	}
 
