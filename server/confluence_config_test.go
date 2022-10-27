@@ -26,6 +26,8 @@ func TestHandleConfluenceConfig(t *testing.T) {
 		method         string
 		statusCode     int
 		body           string
+		userID         string
+		channelID      string
 		patchFuncCalls func()
 	}{
 		"success": {
@@ -36,12 +38,14 @@ func TestHandleConfluenceConfig(t *testing.T) {
 				"callback_id": "callbackID",
 				"state": "", 
 				"submission": {
-					"Client ID": "pppppppppp",
-					"Client Secret": "pppppppppp",
-					"Server URL": "ppppppppp"
+					"Client ID": "mock-ClientID",
+					"Client Secret": "mock-ClientSecret",
+					"Server URL": "https://test.com"
 				},
 				"cancelled": false
 			}`,
+			userID:    "iu73atknztnctef8b8ey9gm6zc",
+			channelID: "tgniw3kmrjd93qns11cboditme",
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
 					return []string{
@@ -56,8 +60,10 @@ func TestHandleConfluenceConfig(t *testing.T) {
 		},
 		"invalid body": {
 			method:     http.MethodPost,
-			statusCode: http.StatusInternalServerError,
+			statusCode: http.StatusBadRequest,
 			body:       `{`,
+			userID:     "iu73atknztnctef8b8ey9gm6zc",
+			channelID:  "tgniw3kmrjd93qns11cboditme",
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
 					return []string{
@@ -68,8 +74,10 @@ func TestHandleConfluenceConfig(t *testing.T) {
 		},
 		"invalid userID or channelID": {
 			method:     http.MethodPost,
-			statusCode: http.StatusInternalServerError,
+			statusCode: http.StatusBadRequest,
 			body:       `{`,
+			userID:     "mock-userID",
+			channelID:  "mock-channelID",
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
 					return []string{

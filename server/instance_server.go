@@ -28,8 +28,7 @@ func (p *Plugin) installServerInstance(rawURL string) (string, *serverInstance, 
 		InstanceCommon: newInstanceCommon(p, ServerInstanceType, types.ID(confluenceURL)),
 	}
 
-	err = p.InstallInstance(instance, false)
-	if err != nil {
+	if err = p.InstallInstance(instance, false); err != nil {
 		return "", nil, err
 	}
 

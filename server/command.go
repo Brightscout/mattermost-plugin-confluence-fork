@@ -162,7 +162,7 @@ func getAutoCompleteData() *model.AutocompleteData {
 
 	listConfig := model.NewAutocompleteData("list", "", "List all the added configs")
 
-	deleteConfig := model.NewAutocompleteData("delete", "[instance]", "Add config for the confluence instance")
+	deleteConfig := model.NewAutocompleteData("delete", "[instance]", "Delete config for the confluence instance")
 	deleteConfig.AddDynamicListArgument("instance", "api/v1/autocomplete/configs", false)
 
 	config.AddCommand(addConfig)
@@ -322,6 +322,7 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 	if _, err = http.Post(fmt.Sprintf(configAPIEndpoint, p.GetSiteURL()), "application/json", bytes.NewBuffer(requestPayload)); err != nil {
 		p.responsef(context, err.Error())
 	}
+
 	return &model.CommandResponse{}
 }
 
@@ -346,6 +347,7 @@ func (p *Plugin) GetConfigKeyList() ([]string, error) {
 				testconfig += key
 			}
 		}
+
 		configKeys = append(configKeys, keys...)
 		page++
 	}
