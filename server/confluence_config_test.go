@@ -17,6 +17,7 @@ import (
 )
 
 func TestHandleConfluenceConfig(t *testing.T) {
+	validUserID, validChannelID := getValidUserAndChannelID()
 	tests := map[string]struct {
 		method         string
 		statusCode     int
@@ -39,33 +40,29 @@ func TestHandleConfluenceConfig(t *testing.T) {
 				},
 				"cancelled": false
 			}`,
-			userID:    "iu73atknztnctef8b8ey9gm6zc",
-			channelID: "tgniw3kmrjd93qns11cboditme",
+			userID:    validUserID,
+			channelID: validChannelID,
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
-					return []string{
-						"https://test.com",
-					}, nil
+					return []string{"https://test.com"}, nil
 				})
 			},
 		},
-		"wrong api method": {
+		"wrong API method": {
 			method:     http.MethodGet,
 			statusCode: http.StatusMethodNotAllowed,
-			userID:     "iu73atknztnctef8b8ey9gm6zc",
-			channelID:  "tgniw3kmrjd93qns11cboditme",
+			userID:     validUserID,
+			channelID:  validChannelID,
 		},
 		"invalid body": {
 			method:     http.MethodPost,
 			statusCode: http.StatusBadRequest,
 			body:       `{`,
-			userID:     "iu73atknztnctef8b8ey9gm6zc",
-			channelID:  "tgniw3kmrjd93qns11cboditme",
+			userID:     validUserID,
+			channelID:  validChannelID,
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
-					return []string{
-						"https://test.com",
-					}, nil
+					return []string{"https://test.com"}, nil
 				})
 			},
 		},
@@ -77,20 +74,12 @@ func TestHandleConfluenceConfig(t *testing.T) {
 			channelID:  "mockChannelID",
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
-					return []string{
-						"https://test.com",
-					}, nil
+					return []string{"https://test.com"}, nil
 				})
 			},
 		},
 	}
-	mockAPI := baseMock()
-	mockAPI.On("LogError", mockAnythingOfTypeBatch("string", 13)...)
-	mockAPI.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...)
-	mockAPI.On("GetBundlePath").Return("/test/testBundlePath", nil)
-
-	p := Plugin{}
-	p.SetAPI(mockAPI)
+	mockAPI, p := getMockAPIAndPlugin()
 
 	p.userStore = getMockUserStoreKV()
 	p.instanceStore = p.getMockInstanceStoreKV(1)
@@ -101,7 +90,7 @@ func TestHandleConfluenceConfig(t *testing.T) {
 			defer monkey.UnpatchAll()
 
 			mockAPI.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Once().Return(&model.Post{})
-			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: "system_admin"}, nil)
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser, nil)
 
 			if tc.patchFuncCalls != nil {
 				tc.patchFuncCalls()

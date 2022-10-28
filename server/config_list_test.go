@@ -17,60 +17,55 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const configPathURL = "/api/v1/autocomplete/configs"
+
 func TestHandleGetConfigList(t *testing.T) {
 	tests := map[string]struct {
 		method         string
 		statusCode     int
 		patchFuncCalls func()
-		resp           []model.AutocompleteListItem
+		resp           []*model.AutocompleteListItem
 	}{
 		"success": {
 			method:     http.MethodGet,
 			statusCode: http.StatusOK,
 			patchFuncCalls: func() {
 				monkey.PatchInstanceMethod(reflect.TypeOf(&Plugin{}), "GetConfigKeyList", func(_ *Plugin) ([]string, error) {
-					return []string{
-						"https://test.com",
-					}, nil
+					return []string{"https://test.com"}, nil
 				})
 			},
-			resp: []model.AutocompleteListItem{
+			resp: []*model.AutocompleteListItem{
 				{
 					Item: "https://test.com",
 				},
 			},
 		},
-		"wrong api method": {
+		"wrong API method": {
 			method:     http.MethodPost,
 			statusCode: http.StatusMethodNotAllowed,
 		},
 	}
-	mockAPI := baseMock()
-	mockAPI.On("LogError", mockAnythingOfTypeBatch("string", 13)...)
-	mockAPI.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...)
-	mockAPI.On("GetBundlePath").Return("/test/testBundlePath", nil)
 
-	p := Plugin{}
-	p.SetAPI(mockAPI)
+	mockAPI, p := getMockAPIAndPlugin()
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			defer monkey.UnpatchAll()
 
-			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: "system_admin"}, nil)
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser(), nil)
 
 			if tc.patchFuncCalls != nil {
 				tc.patchFuncCalls()
 			}
 
-			request := httptest.NewRequest(tc.method, "/api/v1/autocomplete/configs", nil)
+			request := httptest.NewRequest(tc.method, configPathURL, nil)
 			request.Header.Set(config.HeaderMattermostUserID, "test-user")
 			w := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, w, request)
 
 			bodyBytes, err := ioutil.ReadAll(w.Body)
 			require.Nil(t, err)
-			out := []model.AutocompleteListItem{}
+			out := []*model.AutocompleteListItem{}
 			if tc.statusCode == http.StatusOK {
 				err = json.Unmarshal(bodyBytes, &out)
 				require.Nil(t, err)
