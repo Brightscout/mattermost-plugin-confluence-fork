@@ -279,7 +279,7 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 		return &model.CommandResponse{}
 	}
 
-	var defaultServerURL string
+	defaultServerURL := ""
 	if len(args) != 0 {
 		defaultServerURL = args[0]
 	}
