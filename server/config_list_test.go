@@ -52,7 +52,7 @@ func TestHandleGetConfigList(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			defer monkey.UnpatchAll()
 
-			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser(), nil)
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser(true), nil)
 
 			if tc.patchFuncCalls != nil {
 				tc.patchFuncCalls()

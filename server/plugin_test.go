@@ -134,12 +134,7 @@ func TestConfigCommand(t *testing.T) {
 				return "https://test.com/api/v4/actions/dialogs/open"
 			})
 
-			roles := "system_user"
-			if test.isAdmin {
-				roles += " system_admin"
-			}
-
-			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: roles}, nil)
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser(test.isAdmin), nil)
 
 			res, err := p.ExecuteCommand(&plugin.Context{}, test.commandArgs)
 			assert.Nil(t, err)
@@ -178,12 +173,7 @@ func TestConfigAddCommand(t *testing.T) {
 				}
 			}).Once().Return(&model.Post{})
 
-			roles := "system_user"
-			if test.isAdmin {
-				roles += " system_admin"
-			}
-
-			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: roles}, nil)
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser(test.isAdmin), nil)
 
 			res, err := p.ExecuteCommand(&plugin.Context{}, test.commandArgs)
 			assert.Nil(t, err)
@@ -239,12 +229,7 @@ func TestConfigListCommand(t *testing.T) {
 				}
 			}).Once().Return(&model.Post{})
 
-			roles := "system_user"
-			if test.isAdmin {
-				roles += " system_admin"
-			}
-
-			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: roles}, nil)
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser(test.isAdmin), nil)
 			if test.patchAPICalls != nil {
 				test.patchAPICalls()
 			}
@@ -294,12 +279,7 @@ func TestConfigDeleteCommand(t *testing.T) {
 				return "https://test.com/api/v4/actions/dialogs/open"
 			})
 
-			roles := "system_user"
-			if test.isAdmin {
-				roles += " system_admin"
-			}
-
-			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(&model.User{Id: "123", Roles: roles}, nil)
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser(test.isAdmin), nil)
 
 			res, err := p.ExecuteCommand(&plugin.Context{}, test.commandArgs)
 			assert.Nil(t, err)

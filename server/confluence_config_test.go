@@ -90,7 +90,7 @@ func TestHandleConfluenceConfig(t *testing.T) {
 			defer monkey.UnpatchAll()
 
 			mockAPI.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Once().Return(&model.Post{})
-			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser, nil)
+			mockAPI.On("GetUser", mock.AnythingOfType("string")).Return(getMockUser(true), nil)
 
 			if tc.patchFuncCalls != nil {
 				tc.patchFuncCalls()
