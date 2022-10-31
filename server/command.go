@@ -158,7 +158,8 @@ func getAutoCompleteData() *model.AutocompleteData {
 
 	config := model.NewAutocompleteData("config", "", "Config related options for confluence instances")
 
-	addConfig := model.NewAutocompleteData("add", "", "Add config for the confluence instance")
+	addConfig := model.NewAutocompleteData("add", "[instance]", "Add config for the confluence instance")
+	addConfig.AddDynamicListArgument("instance", "api/v1/autocomplete/installed-instances", false)
 
 	listConfig := model.NewAutocompleteData("list", "", "List all the added configs")
 
@@ -270,11 +271,17 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 		return &model.CommandResponse{}
 	}
 
+	defaultServerURL := ""
+	if len(args) != 0 {
+		defaultServerURL = args[0]
+	}
+
 	elements := []model.DialogElement{
 		{
 			DisplayName: configServerURL,
 			Name:        configServerURL,
 			Type:        "text",
+			Default:     defaultServerURL,
 			Placeholder: "https://example.com",
 			HelpText:    "Please enter your Confluence server URL",
 			Optional:    false,
@@ -313,9 +320,11 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 		p.responsef(context, err.Error())
 	}
 
-	if _, err = http.Post(fmt.Sprintf(configAPIEndpoint, p.GetSiteURL()), "application/json", bytes.NewBuffer(requestPayload)); err != nil {
+	resp, err := http.Post(fmt.Sprintf(configAPIEndpoint, p.GetSiteURL()), "application/json", bytes.NewBuffer(requestPayload))
+	if err != nil {
 		p.responsef(context, err.Error())
 	}
+	resp.Body.Close()
 
 	return &model.CommandResponse{}
 }

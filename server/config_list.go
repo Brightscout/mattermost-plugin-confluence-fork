@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/mattermost/mattermost-plugin-confluence/server/utils"
 	"github.com/mattermost/mattermost-server/v6/model"
+
+	"github.com/mattermost/mattermost-plugin-confluence/server/utils"
 )
 
 const paramUserID = "user_id"
@@ -33,7 +34,11 @@ func (p *Plugin) handleGetConfigList(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	response, _ := json.Marshal(out)
+	response, err := json.Marshal(out)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write(response)
 }
