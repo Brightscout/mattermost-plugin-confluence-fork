@@ -36,7 +36,7 @@ func (p *Plugin) handleGetConfigList(w http.ResponseWriter, r *http.Request) {
 
 	response, err := json.Marshal(out)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
