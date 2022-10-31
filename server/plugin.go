@@ -35,12 +35,6 @@ const (
 
 var regexNonAlphaNum = regexp.MustCompile("[^a-zA-Z0-9]+")
 
-type ServerConfig struct {
-	ServerURL    string `json:"serverURL"`
-	ClientID     string `json:"clientID"`
-	ClientSecret string `json:"clientSecret"`
-}
-
 type externalConfig struct {
 	Secret string `json:"Secret"`
 

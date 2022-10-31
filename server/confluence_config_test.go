@@ -9,11 +9,12 @@ import (
 	"testing"
 
 	"bou.ke/monkey"
-	"github.com/mattermost/mattermost-plugin-confluence/server/config"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/mattermost/mattermost-server/v6/plugin/plugintest/mock"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mattermost/mattermost-plugin-confluence/server/config"
 )
 
 func TestHandleConfluenceConfig(t *testing.T) {
@@ -38,7 +39,7 @@ func TestHandleConfluenceConfig(t *testing.T) {
 					"Client Secret": "mock-ClientSecret",
 					"Server URL": "https://test.com"
 				},
-				"cancelled": false
+				"canceled": false
 			}`,
 			userID:    validUserID,
 			channelID: validChannelID,
