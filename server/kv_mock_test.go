@@ -134,6 +134,10 @@ func (store mockInstanceStore) LoadSavedConfigs([]string) ([]*serializer.Conflue
 	return []*serializer.ConfluenceConfig{}, nil
 }
 
+func (store mockInstanceStore) DeleteInstanceConfig(string) error {
+	return nil
+}
+
 type mockOTSStore struct{}
 
 func (store mockOTSStore) StoreOneTimeSecret(token, secret string) error {

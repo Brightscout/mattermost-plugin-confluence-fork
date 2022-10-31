@@ -42,6 +42,7 @@ type InstanceStore interface {
 	StoreInstances(*Instances) error
 	StoreInstanceConfig(*serializer.ConfluenceConfig) error
 	LoadInstanceConfig(string) (*serializer.ConfluenceConfig, error)
+	DeleteInstanceConfig(string) error
 	LoadSavedConfigs([]string) ([]*serializer.ConfluenceConfig, error)
 }
 
@@ -263,6 +264,21 @@ func (store *store) LoadSavedConfigs(configKeys []string) ([]*serializer.Conflue
 		configs = append(configs, &config)
 	}
 	return configs, nil
+}
+
+func (store *store) DeleteInstanceConfig(instanceID string) (returnErr error) {
+	defer func() {
+		if returnErr == nil {
+			return
+		}
+		returnErr = errors.WithMessage(returnErr,
+			fmt.Sprintf("failed to delete config for instance: %s", instanceID))
+	}()
+	if appErr := store.plugin.API.KVDelete(keyWithInstanceIDForConfig(instanceID)); appErr != nil {
+		return appErr
+	}
+	store.plugin.debugf("Deleted: config for instance, keys:\n\t %s:", keyWithInstanceIDForConfig(instanceID))
+	return nil
 }
 
 func UpdateInstances(store InstanceStore, updatef func(instances *Instances) error) error {
