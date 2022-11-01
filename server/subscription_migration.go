@@ -51,9 +51,9 @@ func (p *Plugin) migrateSubscription(subscriptions []serializer.Subscription, us
 		}
 
 		if !flagForSubscriptionCreated {
-			subscriptionCreated = subscriptionCreated + sub.GetAlias() + "\n"
+			subscriptionCreated = fmt.Sprintf("%s- %s\n", subscriptionCreated, sub.GetAlias())
 		} else {
-			failedSubscription = failedSubscription + sub.GetAlias() + "\n"
+			failedSubscription = fmt.Sprintf("%s- %s\n", failedSubscription, sub.GetAlias())
 		}
 	}
 	if subscriptionCreated == subscriptionCreatedHeader {
