@@ -63,6 +63,7 @@ const (
 	NoOldSubscriptionMsg   = "No old Subscriptions found for migration"
 	MigrationStartMsg      = "The migration process has been completed. Please refer to server logs for more information."
 	MigrationWaitMsg       = "Your migration request is being processed. Please wait."
+	configDialogueEndpoint = "%s/config/%s/%s"
 )
 
 var ConfluenceCommandHandler = Handler{
@@ -298,7 +299,7 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 			Type:        "text",
 			Default:     defaultServerURL,
 			Placeholder: "https://example.com",
-			HelpText:    "Please enter your Confluence Server URL",
+			HelpText:    "Please enter your Confluence server URL",
 			Optional:    false,
 		},
 		{
@@ -306,7 +307,7 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 			Name:        configClientID,
 			Type:        "text",
 			Placeholder: configClientID,
-			HelpText:    "Please enter your Confluence OAuth Client ID",
+			HelpText:    "Please enter your Confluence oAuth client ID",
 			Optional:    false,
 		},
 		{
@@ -314,14 +315,14 @@ func addConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.Com
 			Name:        configClientSecret,
 			Type:        "text",
 			Placeholder: configClientSecret,
-			HelpText:    "Please enter your Confluence OAuth Client Secret",
+			HelpText:    "Please enter your Confluence oAuth client Secret",
 			Optional:    false,
 		},
 	}
 
 	requestBody := model.OpenDialogRequest{
 		TriggerId: context.TriggerId,
-		URL:       fmt.Sprintf("%s/config/%s/%s", p.GetPluginURL(), context.ChannelId, context.UserId),
+		URL:       fmt.Sprintf(configDialogueEndpoint, p.GetPluginURL(), context.ChannelId, context.UserId),
 		Dialog: model.Dialog{
 			Title:       configModalTitle,
 			CallbackId:  "callbackID",

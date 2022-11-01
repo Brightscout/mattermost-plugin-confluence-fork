@@ -53,6 +53,7 @@ func (ci *cloudInstance) GetOAuth2Config(isAdmin bool) (*oauth2.Config, error) {
 			"read:confluence-content.all",
 			"read:content-details:confluence",
 			"write:confluence-content",
+			"offline_access",
 		},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://auth.atlassian.com/authorize?audience=api.atlassian.com",

@@ -15,7 +15,7 @@ const paramUserID = "user_id"
 func (p *Plugin) handleGetConfigList(w http.ResponseWriter, r *http.Request) {
 	userID := r.FormValue(paramUserID)
 	if !utils.IsSystemAdmin(userID) {
-		http.Error(w, "user is not system admin", http.StatusUnauthorized)
+		http.Error(w, "user is not a system admin", http.StatusUnauthorized)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (p *Plugin) handleGetConfigList(w http.ResponseWriter, r *http.Request) {
 
 	response, err := json.Marshal(out)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
