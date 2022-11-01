@@ -75,6 +75,14 @@ func (ps PageSubscription) GetConfluenceURL() string {
 	return ps.GetSubscription().BaseURL
 }
 
+func (ps PageSubscription) GetEvents() []string {
+	return ps.Events
+}
+
+func (ps PageSubscription) GetSpaceKeyOrPageID() string {
+	return ps.PageID
+}
+
 func (ps PageSubscription) GetFormattedSubscription() string {
 	var events []string
 	for _, event := range ps.Events {

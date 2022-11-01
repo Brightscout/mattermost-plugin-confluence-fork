@@ -74,6 +74,14 @@ func (ss SpaceSubscription) GetUserID() string {
 	return ss.UserID
 }
 
+func (ss SpaceSubscription) GetEvents() []string {
+	return ss.Events
+}
+
+func (ss SpaceSubscription) GetSpaceKeyOrPageID() string {
+	return ss.SpaceKey
+}
+
 func (ss SpaceSubscription) GetFormattedSubscription() string {
 	var events []string
 	for _, event := range ss.Events {

@@ -60,6 +60,9 @@ const (
 	configAPIEndpoint      = "%s/api/v4/actions/dialogs/open"
 	configModalTitle       = "Confluence Config"
 	configPerPage          = 10
+	NoOldSubscriptionMsg   = "No old Subscriptions found for migration"
+	MigrationStartMsg      = "The migration process has been completed. Please refer to server logs for more information."
+	MigrationWaitMsg       = "Your migration request is being processed. Please wait."
 )
 
 var ConfluenceCommandHandler = Handler{
@@ -76,6 +79,7 @@ var ConfluenceCommandHandler = Handler{
 		"config/list":    listConfig,
 		"config/delete":  deleteConfig,
 		"migrate/list":   listOldSubscriptions,
+		"migrate/start":  startSubscriptionMigration,
 	},
 	defaultHandler: executeConfluenceDefault,
 }
@@ -183,6 +187,9 @@ func getAutoCompleteData() *model.AutocompleteData {
 	migrateItems := []model.AutocompleteListItem{{
 		HelpText: "List all the old subscriptions to be migrated",
 		Item:     "list",
+	}, {
+		HelpText: "Start the migration of old subscriptions",
+		Item:     "start",
 	}}
 	migrate.AddStaticListArgument("", false, migrateItems)
 	confluence.AddCommand(migrate)
@@ -420,6 +427,27 @@ func listOldSubscriptions(p *Plugin, context *model.CommandArgs, args ...string)
 
 	list := serializer.FormattedOldSubscriptionList(oldSubscriptions)
 	p.postCommandResponse(context, list)
+	return &model.CommandResponse{}
+}
+
+func startSubscriptionMigration(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+	oldSubscriptions, gErr := service.GetOldSubscriptions()
+	if gErr != nil {
+		p.postCommandResponse(context, gErr.Error())
+		return &model.CommandResponse{}
+	}
+
+	if len(oldSubscriptions) == 0 {
+		p.postCommandResponse(context, NoOldSubscriptionMsg)
+		return &model.CommandResponse{}
+	}
+
+	go func() {
+		subscriptionCreated := p.migrateSubscription(oldSubscriptions, context.UserId)
+		p.postCommandResponse(context, MigrationStartMsg+subscriptionCreated)
+	}()
+
+	p.postCommandResponse(context, MigrationWaitMsg)
 	return &model.CommandResponse{}
 }
 
