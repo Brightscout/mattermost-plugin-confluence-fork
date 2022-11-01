@@ -28,7 +28,7 @@ func (p *Plugin) migrateSubscription(subscriptions []serializer.Subscription, us
 	subscriptionCreated := subscriptionCreatedHeader
 	failedSubscription := subscriptionFailedHeader
 	for _, sub := range subscriptions {
-		flagForSubscriptionCreated := false
+		failedSubscriptionLog := ""
 		requestPayload, err := json.Marshal(&MigrateSubscriptionBody{
 			SubscriptionType: sub.Name(),
 			Alias:            sub.GetAlias(),
@@ -39,21 +39,21 @@ func (p *Plugin) migrateSubscription(subscriptions []serializer.Subscription, us
 			Events:           sub.GetEvents(),
 		})
 		if err != nil {
-			flagForSubscriptionCreated = true
+			failedSubscriptionLog = err.Error()
 			p.API.LogError("Unable to marshal request body for subscription", "Subscription", sub, "Error", err.Error())
 		}
 
 		path := fmt.Sprintf(createSubscriptionPath, base64.StdEncoding.EncodeToString([]byte(sub.GetConfluenceURL())), sub.GetChannelID())
 		_, message, err := p.CreateSubscription(requestPayload, sub.GetChannelID(), sub.Name(), userID, path)
 		if err != nil {
-			flagForSubscriptionCreated = true
+			failedSubscriptionLog = err.Error()
 			p.API.LogError("Unable to migrate subscription", "Subscription", sub.GetAlias(), "Message", message, "Error", err.Error())
 		}
 
-		if !flagForSubscriptionCreated {
-			subscriptionCreated = fmt.Sprintf("%s- %s\n", subscriptionCreated, sub.GetAlias())
+		if failedSubscriptionLog != "" {
+			failedSubscription = fmt.Sprintf("%s- %s:%s\n", failedSubscription, sub.GetAlias(), failedSubscriptionLog)
 		} else {
-			failedSubscription = fmt.Sprintf("%s- %s\n", failedSubscription, sub.GetAlias())
+			subscriptionCreated = fmt.Sprintf("%s- %s\n", subscriptionCreated, sub.GetAlias())
 		}
 	}
 	if subscriptionCreated == subscriptionCreatedHeader {
