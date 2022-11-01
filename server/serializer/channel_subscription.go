@@ -24,6 +24,7 @@ const (
 	aliasAlreadyExist       = "a subscription with the same name already exists in this channel"
 	urlSpaceKeyAlreadyExist = "a subscription with the same url and space key already exists in this channel"
 	urlPageIDAlreadyExist   = "a subscription with the same url and page id already exists in this channel"
+	subscriptionFormatter   = "\n\n"
 )
 
 var eventDisplayName = map[string]string{
@@ -190,7 +191,7 @@ func FormattedSubscriptionList(channelSubscriptions StringSubscription) string {
 		list = "#### Space Subscriptions \n" + spaceSubscriptionsHeader + spaceSubscriptions
 	}
 	if spaceSubscriptions != "" && pageSubscriptions != "" {
-		list += "\n\n"
+		list += subscriptionFormatter
 	}
 	if pageSubscriptions != "" {
 		list += "#### Page Subscriptions \n" + pageSubscriptionsHeader + pageSubscriptions
@@ -213,7 +214,7 @@ func FormattedOldSubscriptionList(subscriptions []Subscription) string {
 		list = "#### Space Subscriptions \n" + spaceSubscriptionsHeader + spaceSubscriptions
 	}
 	if spaceSubscriptions != "" && pageSubscriptions != "" {
-		list += "\n\n"
+		list += subscriptionFormatter
 	}
 	if pageSubscriptions != "" {
 		list += "#### Page Subscriptions \n" + pageSubscriptionsHeader + pageSubscriptions
