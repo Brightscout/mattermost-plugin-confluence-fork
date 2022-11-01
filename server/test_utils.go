@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/mattermost/mattermost-plugin-confluence/server/config"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin/plugintest"
+
+	"github.com/mattermost/mattermost-plugin-confluence/server/config"
 )
 
 const (
