@@ -24,7 +24,7 @@ const (
 	aliasAlreadyExist       = "a subscription with the same name already exists in this channel"
 	urlSpaceKeyAlreadyExist = "a subscription with the same url and space key already exists in this channel"
 	urlPageIDAlreadyExist   = "a subscription with the same url and page id already exists in this channel"
-	subscriptionFormatter = "\n\n"
+	subscriptionFormatter   = "\n\n"
 )
 
 var eventDisplayName = map[string]string{
