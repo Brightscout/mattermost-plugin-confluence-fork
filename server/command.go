@@ -108,19 +108,31 @@ func (p *Plugin) GetCommand() (*model.Command, error) {
 		return nil, errors.Wrap(err, "failed to get icon data")
 	}
 
-	return &model.Command{
+	command := &model.Command{
 		Trigger:              "confluence",
 		DisplayName:          "Confluence",
 		Description:          "Integration with Confluence.",
 		AutoComplete:         true,
 		AutoCompleteDesc:     "Available commands: subscribe, config, list, unsubscribe, edit, install, help.",
 		AutoCompleteHint:     "[command]",
-		AutocompleteData:     getAutoCompleteData(),
+		AutocompleteData:     getAutoCompleteData(false),
 		AutocompleteIconData: iconData,
-	}, nil
+	}
+
+	oldSubscriptions, getErr := service.GetOldSubscriptions()
+	if getErr != nil {
+		return nil, getErr
+	}
+
+	if len(oldSubscriptions) != 0 {
+		command.AutoCompleteDesc = "Available commands: subscribe, config, migrate, list, unsubscribe, edit, install, help."
+		command.AutocompleteData = getAutoCompleteData(true)
+	}
+
+	return command, nil
 }
 
-func getAutoCompleteData() *model.AutocompleteData {
+func getAutoCompleteData(showMigrateCommands bool) *model.AutocompleteData {
 	confluence := model.NewAutocompleteData("confluence", "[command]", "Available commands: subscribe, config, list, unsubscribe, edit, install, help")
 
 	install := model.NewAutocompleteData("install", "", "Connect Mattermost to a Confluence instance")
@@ -184,16 +196,18 @@ func getAutoCompleteData() *model.AutocompleteData {
 	help := model.NewAutocompleteData("help", "", "Show confluence slash command help")
 	confluence.AddCommand(help)
 
-	migrate := model.NewAutocompleteData("migrate", "", "Migrate your subscriptions to a newer version of confluence plugin")
-	migrateItems := []model.AutocompleteListItem{{
-		HelpText: "List all the old subscriptions to be migrated",
-		Item:     "list",
-	}, {
-		HelpText: "Start the migration of old subscriptions",
-		Item:     "start",
-	}}
-	migrate.AddStaticListArgument("", false, migrateItems)
-	confluence.AddCommand(migrate)
+	if showMigrateCommands {
+		migrate := model.NewAutocompleteData("migrate", "", "Migrate your subscriptions to a newer version of confluence plugin")
+		migrateItems := []model.AutocompleteListItem{{
+			HelpText: "List all the old subscriptions to be migrated",
+			Item:     "list",
+		}, {
+			HelpText: "Start the migration of old subscriptions",
+			Item:     "start",
+		}}
+		migrate.AddStaticListArgument("", false, migrateItems)
+		confluence.AddCommand(migrate)
+	}
 	return confluence
 }
 
