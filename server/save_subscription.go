@@ -61,7 +61,7 @@ func (p *Plugin) CreateSubscription(body []byte, channelID, subscriptionType, us
 	}
 
 	if err = p.HasPermissionToManageSubscription(instance.GetURL(), userID, channelID); err != nil {
-		return http.StatusForbidden, "Don't have the permission to create subscription. Please contact your administrator", err
+		return http.StatusForbidden, "You don't have permission to create a subscription. Please contact your administrator.", err
 	}
 
 	conn, err := p.userStore.LoadConnection(types.ID(instance.GetURL()), types.ID(userID))
@@ -115,9 +115,10 @@ func (p *Plugin) CreateSubscription(body []byte, channelID, subscriptionType, us
 		}
 	}
 
-	if statusCode, sErr := service.SaveSubscription(subscription); sErr != nil {
+	statusCode, sErr := service.SaveSubscription(subscription)
+	if sErr != nil {
 		return statusCode, "Not able to save the subscription", sErr
 	}
 
-	return http.StatusOK, subscriptionSaveSuccess, nil
+	return statusCode, subscriptionSaveSuccess, nil
 }
