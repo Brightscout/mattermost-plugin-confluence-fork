@@ -180,7 +180,7 @@ func getAutoCompleteData() *model.AutocompleteData {
 	help := model.NewAutocompleteData("help", "", "Show confluence slash command help")
 	confluence.AddCommand(help)
 
-	migrate := model.NewAutocompleteData("migrate", "", "Migrate your subscriptions to newer version of confluence plugin")
+	migrate := model.NewAutocompleteData("migrate", "", "Migrate your subscriptions to a newer version of confluence plugin")
 	migrateItems := []model.AutocompleteListItem{{
 		HelpText: "List all the old subscriptions to be migrated",
 		Item:     "list",
@@ -408,9 +408,9 @@ func deleteConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.
 }
 
 func listOldSubscriptions(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
-	oldSubscriptions, gErr := service.GetOldSubscriptions()
-	if gErr != nil {
-		p.postCommandResponse(context, gErr.Error())
+	oldSubscriptions, getErr := service.GetOldSubscriptions()
+	if getErr != nil {
+		p.postCommandResponse(context, getErr.Error())
 		return &model.CommandResponse{}
 	}
 

@@ -185,9 +185,11 @@ func FormattedSubscriptionList(channelSubscriptions StringSubscription) string {
 			spaceSubscriptions += sub.GetFormattedSubscription()
 		}
 	}
+
 	if spaceSubscriptions != "" {
 		list = "#### Space Subscriptions \n" + spaceSubscriptionsHeader + spaceSubscriptions
 	}
+
 	if spaceSubscriptions != "" && pageSubscriptions != "" {
 		list += subscriptionFormatter
 	}
@@ -199,8 +201,8 @@ func FormattedSubscriptionList(channelSubscriptions StringSubscription) string {
 
 func FormattedOldSubscriptionList(subscriptions []Subscription) string {
 	var pageSubscriptions, spaceSubscriptions, list string
-	pageSubscriptionsHeader := "| Name | Base Url | Page Id | Channel Id | Events|\n| :----|:--------| :--------| :-----|"
-	spaceSubscriptionsHeader := "| Name | Base Url | Space Key | Channel Id | Events|\n| :----|:--------| :--------| :-----|"
+	pageSubscriptionsHeader := "| Name | Base URL | Page ID | Channel ID | Events|\n| :----|:--------| :--------| :-----|"
+	spaceSubscriptionsHeader := "| Name | Base URL | Space Key | Channel ID | Events|\n| :----|:--------| :--------| :-----|"
 	for _, sub := range subscriptions {
 		if sub.Name() == SubscriptionTypePage {
 			pageSubscriptions += sub.GetOldFormattedSubscription()
@@ -211,9 +213,11 @@ func FormattedOldSubscriptionList(subscriptions []Subscription) string {
 	if spaceSubscriptions != "" {
 		list = "#### Space Subscriptions \n" + spaceSubscriptionsHeader + spaceSubscriptions
 	}
+
 	if spaceSubscriptions != "" && pageSubscriptions != "" {
 		list += subscriptionFormatter
 	}
+
 	if pageSubscriptions != "" {
 		list += "#### Page Subscriptions \n" + pageSubscriptionsHeader + pageSubscriptions
 	}
