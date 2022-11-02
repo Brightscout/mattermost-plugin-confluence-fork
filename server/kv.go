@@ -193,7 +193,7 @@ func (store *store) LoadInstanceFullKey(fullkey string) (Instance, error) {
 		return &si, nil
 	}
 
-	return nil, fmt.Errorf("Confluence instance %s has unsupported type: %s", fullkey, si.Type)
+	return nil, fmt.Errorf("confluence instance %s has unsupported type: %s", fullkey, si.Type)
 }
 
 func (store *store) StoreInstance(instance Instance) error {
