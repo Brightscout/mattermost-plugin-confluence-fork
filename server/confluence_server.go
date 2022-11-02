@@ -31,7 +31,8 @@ func (p *Plugin) handleConfluenceServerWebhook(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if status, err := verifyWebHookSecret(p.conf.Secret, r.Header.Get("X-Hub-Signature"), body); err != nil {
+	status, err := verifyWebHookSecret(p.conf.Secret, r.Header.Get("X-Hub-Signature"), body); 
+	if err != nil {
 		http.Error(w, err.Error(), status)
 		return
 	}

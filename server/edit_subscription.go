@@ -61,8 +61,8 @@ func (p *Plugin) handleEditChannelSubscription(w http.ResponseWriter, r *http.Re
 		}
 
 		spaceKey := subscription.(*serializer.SpaceSubscription).GetSubscription().SpaceKey
-		resp, err := client.GetSpaceData(spaceKey)
-		if err != nil {
+		resp, GetErr := client.GetSpaceData(spaceKey)
+		if GetErr != nil {
 			p.LogAndRespondError(w, http.StatusBadRequest, "Error getting space related data for space subscription.", err)
 			return
 		}
@@ -76,8 +76,8 @@ func (p *Plugin) handleEditChannelSubscription(w http.ResponseWriter, r *http.Re
 			return
 		}
 
-		pageID, err := strconv.Atoi(subscription.(*serializer.PageSubscription).GetSubscription().PageID)
-		if err != nil {
+		pageID, SErr := strconv.Atoi(subscription.(*serializer.PageSubscription).GetSubscription().PageID)
+		if SErr != nil {
 			p.LogAndRespondError(w, http.StatusInternalServerError, "Error converting pageID to integer.", err)
 			return
 		}
