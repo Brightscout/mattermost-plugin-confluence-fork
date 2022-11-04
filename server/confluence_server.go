@@ -16,6 +16,8 @@ import (
 	"github.com/mattermost/mattermost-plugin-confluence/server/utils/types"
 )
 
+const webhookSecretHeader = "X-Hub-Signature"
+
 func (p *Plugin) handleConfluenceServerWebhook(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userID := params[ParamUserID]
@@ -31,7 +33,7 @@ func (p *Plugin) handleConfluenceServerWebhook(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	status, err := verifyWebHookSecret(p.conf.Secret, r.Header.Get("X-Hub-Signature"), body)
+	status, err := verifyWebHookSecret(p.conf.Secret, r.Header.Get(webhookSecretHeader), body)
 	if err != nil {
 		http.Error(w, err.Error(), status)
 		return

@@ -50,6 +50,7 @@ func (p *Plugin) handleEditChannelSubscription(w http.ResponseWriter, r *http.Re
 	subscription, oldSubscription, statusLog, statusCode, err := p.SubscriptionsFromJSON(r.Body, client, subscriptionType, oldSubscriptionType, userID)
 	if err != nil {
 		p.LogAndRespondError(w, statusCode, statusLog, err)
+		return
 	}
 
 	if err := p.DeleteSubscription(subscription.GetChannelID(), oldSubscription.GetAlias(), userID); err != nil {
