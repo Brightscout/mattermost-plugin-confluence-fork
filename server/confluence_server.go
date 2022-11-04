@@ -16,6 +16,7 @@ import (
 	"github.com/mattermost/mattermost-plugin-confluence/server/utils/types"
 )
 
+// #nosec G101 -- This is a false positive. The below line is not a hardcoded credential
 const webhookSecretHeader = "X-Hub-Signature"
 
 func (p *Plugin) handleConfluenceServerWebhook(w http.ResponseWriter, r *http.Request) {
