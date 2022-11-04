@@ -151,7 +151,7 @@ func (ccc *confluenceCloudClient) GetUserGroups(connection *Connection) ([]*User
 	userGroups := UserGroups{}
 	_, err := utils.CallJSONWithURL(ccc.URL, fmt.Sprintf(PathGetUserGroupsForCloud, connection.AccountID), http.MethodGet, nil, &userGroups, ccc.HTTPClient)
 	if err != nil {
-		return nil, errors.Wrap(err, "confluence GetSpaceData")
+		return nil, errors.Wrap(err, "confluence GetUserGroups")
 	}
 
 	return userGroups.Groups, nil
