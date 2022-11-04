@@ -241,9 +241,9 @@ func (p *Plugin) CompleteOAuth2(mattermostUserID, code, state string, instance I
 
 	// Fetch the cloudid for cloud instance if not already present
 	if instance.Common().Type == CloudInstanceType && instance.(*cloudInstance).CloudID == "" {
-		cloudID, CErr := client.(*confluenceCloudClient).GetCloudID()
-		if CErr != nil {
-			return nil, nil, CErr
+		cloudID, cErr := client.(*confluenceCloudClient).GetCloudID()
+		if cErr != nil {
+			return nil, nil, cErr
 		}
 		ci := instance.(*cloudInstance)
 		ci.CloudID = cloudID

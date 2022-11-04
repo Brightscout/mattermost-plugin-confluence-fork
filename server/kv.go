@@ -410,9 +410,9 @@ func (store store) DeleteConnection(instanceID, mattermostUserID types.ID) (retu
 
 	// Check for whether the admin token stored for each confluenceURL is of the current user or not. If it is then delete that admin connection also
 	if c.IsAdmin {
-		adminConnection, LErr := store.LoadConnection(instanceID, AdminMattermostUserID)
-		if LErr != nil {
-			return LErr
+		adminConnection, lErr := store.LoadConnection(instanceID, AdminMattermostUserID)
+		if lErr != nil {
+			return lErr
 		}
 
 		// Check if both the tokens are same or not

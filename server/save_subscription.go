@@ -65,9 +65,9 @@ func (p *Plugin) handleSaveSubscription(w http.ResponseWriter, r *http.Request) 
 		}
 
 		spaceKey := subscription.(*serializer.SpaceSubscription).GetSubscription().SpaceKey
-		resp, GErr := client.GetSpaceData(spaceKey)
-		if GErr != nil {
-			p.LogAndRespondError(w, http.StatusBadRequest, "Error getting space related data for space subscription.", GErr)
+		resp, gErr := client.GetSpaceData(spaceKey)
+		if gErr != nil {
+			p.LogAndRespondError(w, http.StatusBadRequest, "Error getting space related data for space subscription.", gErr)
 			return
 		}
 

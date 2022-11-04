@@ -139,7 +139,6 @@ func (ccc *confluenceCloudClient) GetPageData(pageID int) (*PageResponse, error)
 
 func (ccc *confluenceCloudClient) GetSpaceData(spaceKey string) (*SpaceResponse, error) {
 	spaceResponse := &SpaceResponse{}
-
 	_, err := utils.CallJSONWithURL(ccc.URL, fmt.Sprintf(PathSpaceData, spaceKey), http.MethodGet, nil, spaceResponse, ccc.HTTPClient)
 	if err != nil {
 		return nil, errors.Wrap(err, "confluence GetSpaceData")
@@ -150,7 +149,6 @@ func (ccc *confluenceCloudClient) GetSpaceData(spaceKey string) (*SpaceResponse,
 
 func (ccc *confluenceCloudClient) GetUserGroups(connection *Connection) ([]*UserGroup, error) {
 	userGroups := UserGroups{}
-
 	_, err := utils.CallJSONWithURL(ccc.URL, fmt.Sprintf(PathGetUserGroupsForCloud, connection.AccountID), http.MethodGet, nil, &userGroups, ccc.HTTPClient)
 	if err != nil {
 		return nil, errors.Wrap(err, "confluence GetSpaceData")

@@ -18,9 +18,9 @@ func EditSubscription(subscription serializer.Subscription) error {
 	}
 	key := store.GetSubscriptionKey()
 	err = store.AtomicModify(key, func(initialBytes []byte) ([]byte, error) {
-		subscriptions, SErr := serializer.SubscriptionsFromJSON(initialBytes)
-		if SErr != nil {
-			return nil, SErr
+		subscriptions, sErr := serializer.SubscriptionsFromJSON(initialBytes)
+		if sErr != nil {
+			return nil, sErr
 		}
 		subscription.Edit(subscriptions)
 		modifiedBytes, marshalErr := json.Marshal(subscriptions)

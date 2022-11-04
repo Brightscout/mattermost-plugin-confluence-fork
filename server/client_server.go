@@ -141,7 +141,6 @@ func (csc *confluenceServerClient) CreateWebhook(subscription serializer.Subscri
 		},
 	}
 	webhookResponse := &WebhookResponse{}
-
 	_, err := utils.CallJSONWithURL(csc.URL, PathCreateWebhook, http.MethodPost, requestBody, webhookResponse, csc.HTTPClient)
 	if err != nil {
 		return nil, errors.Wrap(err, "confluence CreateWebhook")

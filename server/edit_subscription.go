@@ -53,7 +53,7 @@ func (p *Plugin) handleEditChannelSubscription(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := p.DeleteSubscription(subscription.GetChannelID(), oldSubscription.GetAlias(), userID); err != nil {
-		p.LogAndRespondError(w, http.StatusBadRequest, "not able to delete subscription.", err)
+		p.LogAndRespondError(w, http.StatusBadRequest, "Not able to delete subscription.", err)
 		return
 	}
 
@@ -92,9 +92,9 @@ func (p *Plugin) SubscriptionsFromJSON(requestBody io.ReadCloser, client Client,
 		}
 
 		spaceKey := subscription.(*serializer.SpaceSubscription).GetSubscription().SpaceKey
-		resp, GErr := client.GetSpaceData(spaceKey)
-		if GErr != nil {
-			return nil, nil, "Error getting space related data for space subscription.", http.StatusBadRequest, GErr
+		resp, gErr := client.GetSpaceData(spaceKey)
+		if gErr != nil {
+			return nil, nil, "Error getting space related data for space subscription.", http.StatusBadRequest, gErr
 		}
 
 		newSubscription := subscription.(*serializer.SpaceSubscription).GetSubscription().UpdateSpaceIDAndUserID(strconv.FormatInt(resp.ID, 10), userID)
@@ -105,9 +105,9 @@ func (p *Plugin) SubscriptionsFromJSON(requestBody io.ReadCloser, client Client,
 			return nil, nil, "Error decoding request body for page subscription.", http.StatusBadRequest, err
 		}
 
-		pageID, SErr := strconv.Atoi(subscription.(*serializer.PageSubscription).GetSubscription().PageID)
-		if SErr != nil {
-			return nil, nil, "Error converting pageID to integer.", http.StatusInternalServerError, SErr
+		pageID, sErr := strconv.Atoi(subscription.(*serializer.PageSubscription).GetSubscription().PageID)
+		if sErr != nil {
+			return nil, nil, "Error converting pageID to integer.", http.StatusInternalServerError, sErr
 		}
 
 		_, err = client.GetPageData(pageID)
