@@ -164,8 +164,7 @@ func SubscriptionsFromJSON(bytes []byte) (*Subscriptions, error) {
 func OldSubscriptionsFromJSON(bytes []byte) (*OldSubscriptions, error) {
 	var subs *OldSubscriptions
 	if len(bytes) != 0 {
-		unmarshalErr := json.Unmarshal(bytes, &subs)
-		if unmarshalErr != nil {
+		if unmarshalErr := json.Unmarshal(bytes, &subs); unmarshalErr != nil {
 			return nil, unmarshalErr
 		}
 	} else {
@@ -176,8 +175,8 @@ func OldSubscriptionsFromJSON(bytes []byte) (*OldSubscriptions, error) {
 
 func FormattedSubscriptionList(channelSubscriptions StringSubscription) string {
 	var pageSubscriptions, spaceSubscriptions, list string
-	pageSubscriptionsHeader := "| Name | Base Url | Page Id | Events|\n| :----|:--------| :--------| :-----|"
-	spaceSubscriptionsHeader := "| Name | Base Url | Space Key | Events|\n| :----|:--------| :--------| :-----|"
+	pageSubscriptionsHeader := "| Name | Base URL | Page ID | Events|\n| :----|:--------| :--------| :-----|"
+	spaceSubscriptionsHeader := "| Name | Base URL | Space Key | Events|\n| :----|:--------| :--------| :-----|"
 	for _, sub := range channelSubscriptions {
 		if sub.Name() == SubscriptionTypePage {
 			pageSubscriptions += sub.GetFormattedSubscription()

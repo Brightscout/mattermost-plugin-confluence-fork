@@ -97,6 +97,7 @@ func GetOldSubscriptions() ([]serializer.Subscription, error) {
 	if appErr != nil {
 		return nil, errors.New(getChannelSubscriptionsError)
 	}
+	
 	subscriptions, err := serializer.OldSubscriptionsFromJSON(initialBytes)
 	if err != nil {
 		return nil, errors.New(getChannelSubscriptionsError)
