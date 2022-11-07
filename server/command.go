@@ -209,6 +209,9 @@ func getAutoCompleteData(showMigrateCommands bool) *model.AutocompleteData {
 		}, {
 			HelpText: "Start the migration of old subscriptions",
 			Item:     "start",
+		}, {
+			HelpText: "Delete all the old subscriptions",
+			Item:     "cleanup",
 		}}
 		migrate.AddStaticListArgument("", false, migrateItems)
 		confluence.AddCommand(migrate)
