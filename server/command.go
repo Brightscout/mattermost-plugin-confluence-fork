@@ -65,7 +65,7 @@ const (
 	NoOldSubscriptionDeleteMsg = "No old Subscriptions were found for cleanup."
 	MigrationCompletedMsg      = "The migration process has been completed. Please refer to server logs for more information."
 	CleanupCompletedMsg        = "The cleanup process has been completed. Please refer to server logs for more information."
-	CleanupWaitMsg             = "Your cleanup request is being processed. Please wait."
+	CleanupWaitMsg             = "Your cleanup request is being processed. Please wait." // #nosec G401
 	MigrationWaitMsg           = "Your migration request is being processed. Please wait."
 	configDialogueEndpoint     = "%s/config/%s/%s"
 )
