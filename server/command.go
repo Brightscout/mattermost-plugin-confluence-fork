@@ -52,22 +52,22 @@ const (
 		"* `/confluence uninstall cloud [confluenceURL]` - Disconnect Mattermost from a Confluence Cloud instance located at <confluenceURL>\n" +
 		"* `/confluence uninstall server [confluenceURL]` - Disconnect Mattermost from a Confluence Server or Data Center instance located at <confluenceURL>\n"
 
-	invalidCommand             = "Invalid command."
-	installOnlySystemAdmin     = "`/confluence install` can only be run by a system administrator."
-	configNotFoundError        = "configuration not found for %s. Please ask system admin to add config for %s in plugin configuration"
-	configServerURL            = "Server URL"
-	configClientID             = "Client ID"
-	configClientSecret         = "Client Secret"
-	configAPIEndpoint          = "%s/api/v4/actions/dialogs/open"
-	configModalTitle           = "Confluence Config"
-	configPerPage              = 10
-	NoOldSubscriptionMsg       = "No old Subscriptions found for migration"
-	NoOldSubscriptionDeleteMsg = "No old Subscriptions were found for cleanup."
-	MigrationCompletedMsg      = "The migration process has been completed. Please refer to server logs for more information."
-	CleanupCompletedMsg        = "The cleanup process has been completed. Please refer to server logs for more information."
-	CleanupWaitMsg             = "Your cleanup request is being processed. Please wait." // #nosec G101
-	MigrationWaitMsg           = "Your migration request is being processed. Please wait."
-	configDialogueEndpoint     = "%s/config/%s/%s"
+	invalidCommand              = "Invalid command."
+	installOnlySystemAdmin      = "`/confluence install` can only be run by a system administrator."
+	configNotFoundError         = "configuration not found for %s. Please ask system admin to add config for %s in plugin configuration"
+	configServerURL             = "Server URL"
+	configClientID              = "Client ID"
+	configClientSecret          = "Client Secret"
+	configAPIEndpoint           = "%s/api/v4/actions/dialogs/open"
+	configModalTitle            = "Confluence Config"
+	configPerPage               = 10
+	NoOldSubscriptionsMsg       = "No old Subscriptions found for migration"
+	NoOldSubscriptionsDeleteMsg = "No old Subscriptions were found for cleanup."
+	MigrationCompletedMsg       = "The migration process has been completed. Please refer to the server logs for more information."
+	CleanupCompletedMsg         = "The cleanup process has been completed. Please refer to the server logs for more information."
+	CleanupWaitMsg              = "Your cleanup request is being processed. Please wait." // #nosec G101
+	MigrationWaitMsg            = "Your migration request is being processed. Please wait."
+	configDialogueEndpoint      = "%s/config/%s/%s"
 )
 
 var ConfluenceCommandHandler = Handler{
@@ -85,7 +85,7 @@ var ConfluenceCommandHandler = Handler{
 		"config/delete":   deleteConfig,
 		"migrate/list":    listOldSubscriptions,
 		"migrate/start":   startSubscriptionMigration,
-		"migrate/cleanup": deleteOldSubscription,
+		"migrate/cleanup": deleteOldSubscriptions,
 	},
 	defaultHandler: executeConfluenceDefault,
 }
@@ -471,7 +471,7 @@ func startSubscriptionMigration(p *Plugin, context *model.CommandArgs, args ...s
 	}
 
 	if len(oldSubscriptions) == 0 {
-		p.postCommandResponse(context, NoOldSubscriptionMsg)
+		p.postCommandResponse(context, NoOldSubscriptionsMsg)
 		return &model.CommandResponse{}
 	}
 
@@ -484,7 +484,7 @@ func startSubscriptionMigration(p *Plugin, context *model.CommandArgs, args ...s
 	return &model.CommandResponse{}
 }
 
-func deleteOldSubscription(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+func deleteOldSubscriptions(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
 	if !utils.IsSystemAdmin(context.UserId) {
 		p.postCommandResponse(context, installOnlySystemAdmin)
 		return &model.CommandResponse{}
@@ -497,7 +497,7 @@ func deleteOldSubscription(p *Plugin, context *model.CommandArgs, args ...string
 	}
 
 	if len(oldSubscriptions) == 0 {
-		p.postCommandResponse(context, NoOldSubscriptionDeleteMsg)
+		p.postCommandResponse(context, NoOldSubscriptionsDeleteMsg)
 		return &model.CommandResponse{}
 	}
 
