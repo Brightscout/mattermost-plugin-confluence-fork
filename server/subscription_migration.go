@@ -24,11 +24,10 @@ type MigrateSubscriptionBody struct {
 	Events           []string `json:"events"`
 }
 
-func (p *Plugin) migrateSubscription(subscriptions []serializer.Subscription, userID string) string {
+func (p *Plugin) migrateSubscriptions(subscriptions []serializer.Subscription, userID string) string {
 	subscriptionCreated := subscriptionCreatedHeader
 	failedSubscription := subscriptionFailedHeader
 	for _, sub := range subscriptions {
-		failedSubscriptionLog := ""
 		requestPayload, err := json.Marshal(&MigrateSubscriptionBody{
 			SubscriptionType: sub.Name(),
 			Alias:            sub.GetAlias(),
@@ -39,28 +38,26 @@ func (p *Plugin) migrateSubscription(subscriptions []serializer.Subscription, us
 			Events:           sub.GetEvents(),
 		})
 		if err != nil {
-			failedSubscriptionLog = err.Error()
 			p.API.LogError("Unable to marshal request body for subscription", "Subscription", sub, "Error", err.Error())
+			failedSubscription = fmt.Sprintf("%s- %s:%s\n", failedSubscription, sub.GetAlias(), err.Error())
+			continue
 		}
 
 		path := fmt.Sprintf(createSubscriptionPath, base64.StdEncoding.EncodeToString([]byte(sub.GetConfluenceURL())), sub.GetChannelID())
 		_, message, err := p.CreateSubscription(requestPayload, sub.GetChannelID(), sub.Name(), userID, path)
 		if err != nil {
-			failedSubscriptionLog = err.Error()
 			p.API.LogError("Unable to migrate subscription", "Subscription", sub.GetAlias(), "Message", message, "Error", err.Error())
+			failedSubscription = fmt.Sprintf("%s- %s:%s\n", failedSubscription, sub.GetAlias(), err.Error())
+			continue
 		}
 
-		if failedSubscriptionLog != "" {
-			failedSubscription = fmt.Sprintf("%s- %s:%s\n", failedSubscription, sub.GetAlias(), failedSubscriptionLog)
-		} else {
-			subscriptionCreated = fmt.Sprintf("%s- %s\n", subscriptionCreated, sub.GetAlias())
-		}
+		subscriptionCreated = fmt.Sprintf("%s- %s\n", subscriptionCreated, sub.GetAlias())
 	}
 	if subscriptionCreated == subscriptionCreatedHeader {
 		subscriptionCreated = ""
 	}
 	if failedSubscription == subscriptionFailedHeader {
-		subscriptionCreated = ""
+		failedSubscription = ""
 	}
 
 	return fmt.Sprintf("%s\n%s", subscriptionCreated, failedSubscription)

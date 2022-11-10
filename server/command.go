@@ -61,7 +61,7 @@ const (
 	configModalTitle       = "Confluence Config"
 	configPerPage          = 10
 	NoOldSubscriptionsMsg  = "No old Subscriptions found for migration."
-	MigrationCompletedMsg  = "The migration process has been completed. Please refer to server logs for more information."
+	MigrationCompletedMsg  = "The migration process has been completed. Please refer to the server logs for more information."
 	MigrationWaitMsg       = "Your migration request is being processed. Please wait."
 	configDialogueEndpoint = "%s/config/%s/%s"
 )
@@ -444,7 +444,7 @@ func startSubscriptionMigration(p *Plugin, context *model.CommandArgs, args ...s
 	}
 
 	go func() {
-		subscriptionString := p.migrateSubscription(oldSubscriptions, context.UserId)
+		subscriptionString := p.migrateSubscriptions(oldSubscriptions, context.UserId)
 		p.postCommandResponse(context, fmt.Sprintf("%s%s", MigrationCompletedMsg, subscriptionString))
 	}()
 
