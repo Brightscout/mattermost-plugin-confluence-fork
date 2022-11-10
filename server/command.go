@@ -61,8 +61,8 @@ const (
 	configAPIEndpoint           = "%s/api/v4/actions/dialogs/open"
 	configModalTitle            = "Confluence Config"
 	configPerPage               = 10
-	NoOldSubscriptionsMsg       = "No old Subscriptions found for migration"
-	NoOldSubscriptionsDeleteMsg = "No old Subscriptions were found for cleanup."
+	NoOldSubscriptionsMsg       = "No old subscriptions found for migration"
+	NoOldSubscriptionsDeleteMsg = "No old subscriptions were found for cleanup."
 	MigrationCompletedMsg       = "The migration process has been completed. Please refer to the server logs for more information."
 	CleanupCompletedMsg         = "The cleanup process has been completed. Please refer to the server logs for more information."
 	CleanupWaitMsg              = "Your cleanup request is being processed. Please wait." // #nosec G101
