@@ -82,9 +82,9 @@ func (p *Plugin) CreateSubscription(body []byte, channelID, subscriptionType, us
 		}
 
 		spaceKey := subscription.(*serializer.SpaceSubscription).GetSubscription().SpaceKey
-		resp, err := client.GetSpaceData(spaceKey)
-		if err != nil {
-			return http.StatusBadRequest, "Error getting space related data for space subscription.", err
+		resp, gErr := client.GetSpaceData(spaceKey)
+		if gErr != nil {
+			return http.StatusBadRequest, "Error getting space related data for space subscription.", gErr
 		}
 
 		updatedSubscrption := subscription.(*serializer.SpaceSubscription).GetSubscription().UpdateSpaceIDAndUserID(strconv.FormatInt(resp.ID, 10), userID)

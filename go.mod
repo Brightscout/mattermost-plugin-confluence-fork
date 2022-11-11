@@ -13,4 +13,5 @@ require (
 	github.com/thoas/go-funk v0.6.0
 	go.uber.org/atomic v1.9.0
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b
+	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec // indirect
 )
