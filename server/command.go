@@ -476,7 +476,7 @@ func startSubscriptionMigration(p *Plugin, context *model.CommandArgs, args ...s
 	}
 
 	go func() {
-		subscriptionString := p.migrateSubscription(oldSubscriptions, context.UserId)
+		subscriptionString := p.migrateSubscriptions(oldSubscriptions, context.UserId)
 		p.postCommandResponse(context, fmt.Sprintf("%s%s", MigrationCompletedMsg, subscriptionString))
 	}()
 
