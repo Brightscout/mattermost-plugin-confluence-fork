@@ -28,7 +28,7 @@ func (p *Plugin) handleSaveSubscription(w http.ResponseWriter, r *http.Request) 
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		p.LogAndRespondError(w, http.StatusInternalServerError, "", err)
+		p.LogAndRespondError(w, http.StatusInternalServerError, "Not able to read the request body", err)
 		return
 	}
 
@@ -61,7 +61,7 @@ func (p *Plugin) CreateSubscription(body []byte, channelID, subscriptionType, us
 	}
 
 	if err = p.HasPermissionToManageSubscription(instance.GetURL(), userID, channelID); err != nil {
-		return http.StatusForbidden, "You don't have permission to create a subscription. Please contact your administrator.", err
+		return http.StatusForbidden, "You don't have the permission to create a subscription. Please contact your administrator.", err
 	}
 
 	conn, err := p.userStore.LoadConnection(types.ID(instance.GetURL()), types.ID(userID))
