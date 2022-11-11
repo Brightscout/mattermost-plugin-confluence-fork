@@ -36,7 +36,7 @@ func TestGetChannelSubscription(t *testing.T) {
 			subscriptions := serializer.Subscriptions{
 				ByChannelID: map[string]serializer.StringSubscription{
 					"testChannelID": {
-						"test": serializer.SpaceSubscription{
+						"test": &serializer.SpaceSubscription{
 							SpaceKey: "TS",
 							BaseSubscription: serializer.BaseSubscription{
 								Alias:     "test",
@@ -47,7 +47,7 @@ func TestGetChannelSubscription(t *testing.T) {
 						},
 					},
 					"testChannelID3": {
-						"test": serializer.PageSubscription{
+						"test": &serializer.PageSubscription{
 							PageID: "1234",
 							BaseSubscription: serializer.BaseSubscription{
 								Alias:     "test",
@@ -83,7 +83,7 @@ func TestGetChannelSubscription(t *testing.T) {
 				return
 			}
 			assert.NotNil(t, subscription)
-			assert.Equal(t, subscription.(serializer.SpaceSubscription).Alias, val.alias)
+			assert.Equal(t, subscription.GetAlias(), val.alias)
 		})
 	}
 }

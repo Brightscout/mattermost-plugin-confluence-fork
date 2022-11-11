@@ -14,6 +14,7 @@ import (
 	"github.com/mattermost/mattermost-plugin-confluence/server/config"
 	"github.com/mattermost/mattermost-plugin-confluence/server/serializer"
 	"github.com/mattermost/mattermost-plugin-confluence/server/service"
+	storePackage "github.com/mattermost/mattermost-plugin-confluence/server/store"
 	"github.com/mattermost/mattermost-plugin-confluence/server/utils"
 	"github.com/mattermost/mattermost-plugin-confluence/server/utils/kvstore"
 	"github.com/mattermost/mattermost-plugin-confluence/server/utils/types"
@@ -51,32 +52,40 @@ const (
 		"* `/confluence uninstall cloud [confluenceURL]` - Disconnect Mattermost from a Confluence Cloud instance located at <confluenceURL>\n" +
 		"* `/confluence uninstall server [confluenceURL]` - Disconnect Mattermost from a Confluence Server or Data Center instance located at <confluenceURL>\n"
 
-	invalidCommand         = "Invalid command."
-	installOnlySystemAdmin = "`/confluence install` can only be run by a system administrator."
-	configNotFoundError    = "configuration not found for %s. Please ask system admin to add config for %s in plugin configuration"
-	configServerURL        = "Server URL"
-	configClientID         = "Client ID"
-	configClientSecret     = "Client Secret"
-	configAPIEndpoint      = "%s/api/v4/actions/dialogs/open"
-	configModalTitle       = "Confluence Config"
-	configPerPage          = 10
-	configDialogueEndpoint = "%s/config/%s/%s"
+	invalidCommand              = "Invalid command."
+	installOnlySystemAdmin      = "`/confluence install` can only be run by a system administrator."
+	configNotFoundError         = "configuration not found for %s. Please ask system admin to add config for %s in plugin configuration"
+	configServerURL             = "Server URL"
+	configClientID              = "Client ID"
+	configClientSecret          = "Client Secret"
+	configAPIEndpoint           = "%s/api/v4/actions/dialogs/open"
+	configModalTitle            = "Confluence Config"
+	configPerPage               = 10
+	NoOldSubscriptionsMsg       = "No old subscriptions found for migration"
+	NoOldSubscriptionsDeleteMsg = "No old subscriptions were found for cleanup."
+	MigrationCompletedMsg       = "The migration process has been completed. Please refer to the server logs for more information."
+	CleanupCompletedMsg         = "The cleanup process has been completed. Please refer to the server logs for more information."
+	CleanupWaitMsg              = "Your cleanup request is being processed. Please wait." // #nosec G101
+	MigrationWaitMsg            = "Your migration request is being processed. Please wait."
+	configDialogueEndpoint      = "%s/config/%s/%s"
 )
 
 var ConfluenceCommandHandler = Handler{
 	handlers: map[string]HandlerFunc{
-		"connect":        executeConnect,
-		"disconnect":     executeDisconnect,
-		"list":           listChannelSubscription,
-		"unsubscribe":    deleteSubscription,
-		"install/cloud":  showInstallCloudHelp,
-		"install/server": showInstallServerHelp,
-		"uninstall":      executeInstanceUninstall,
-		"help":           confluenceHelpCommand,
-		"config/add":     addConfig,
-		"config/list":    listConfig,
-		"config/delete":  deleteConfig,
-		"migrate/list":   listOldSubscriptions,
+		"connect":         executeConnect,
+		"disconnect":      executeDisconnect,
+		"list":            listChannelSubscription,
+		"unsubscribe":     deleteSubscription,
+		"install/cloud":   showInstallCloudHelp,
+		"install/server":  showInstallServerHelp,
+		"uninstall":       executeInstanceUninstall,
+		"help":            confluenceHelpCommand,
+		"config/add":      addConfig,
+		"config/list":     listConfig,
+		"config/delete":   deleteConfig,
+		"migrate/list":    listOldSubscriptions,
+		"migrate/start":   startSubscriptionMigration,
+		"migrate/cleanup": deleteOldSubscriptions,
 	},
 	defaultHandler: executeConfluenceDefault,
 }
@@ -104,19 +113,31 @@ func (p *Plugin) GetCommand() (*model.Command, error) {
 		return nil, errors.Wrap(err, "failed to get icon data")
 	}
 
-	return &model.Command{
+	command := &model.Command{
 		Trigger:              "confluence",
 		DisplayName:          "Confluence",
 		Description:          "Integration with Confluence.",
 		AutoComplete:         true,
 		AutoCompleteDesc:     "Available commands: subscribe, config, list, unsubscribe, edit, install, help.",
 		AutoCompleteHint:     "[command]",
-		AutocompleteData:     getAutoCompleteData(),
+		AutocompleteData:     getAutoCompleteData(false),
 		AutocompleteIconData: iconData,
-	}, nil
+	}
+
+	oldSubscriptions, getErr := service.GetOldSubscriptions()
+	if getErr != nil {
+		return nil, getErr
+	}
+
+	if len(oldSubscriptions) != 0 {
+		command.AutoCompleteDesc = "Available commands: subscribe, config, migrate, list, unsubscribe, edit, install, help."
+		command.AutocompleteData = getAutoCompleteData(true)
+	}
+
+	return command, nil
 }
 
-func getAutoCompleteData() *model.AutocompleteData {
+func getAutoCompleteData(showMigrateCommands bool) *model.AutocompleteData {
 	confluence := model.NewAutocompleteData("confluence", "[command]", "Available commands: subscribe, config, list, unsubscribe, edit, install, help")
 
 	install := model.NewAutocompleteData("install", "", "Connect Mattermost to a Confluence instance")
@@ -180,13 +201,21 @@ func getAutoCompleteData() *model.AutocompleteData {
 	help := model.NewAutocompleteData("help", "", "Show confluence slash command help")
 	confluence.AddCommand(help)
 
-	migrate := model.NewAutocompleteData("migrate", "", "Migrate your subscriptions to a newer version of confluence plugin")
-	migrateItems := []model.AutocompleteListItem{{
-		HelpText: "List all the old subscriptions to be migrated",
-		Item:     "list",
-	}}
-	migrate.AddStaticListArgument("", false, migrateItems)
-	confluence.AddCommand(migrate)
+	if showMigrateCommands {
+		migrate := model.NewAutocompleteData("migrate", "", "Migrate your subscriptions to a newer version of confluence plugin")
+		migrateItems := []model.AutocompleteListItem{{
+			HelpText: "List all the old subscriptions to be migrated",
+			Item:     "list",
+		}, {
+			HelpText: "Start the migration of old subscriptions",
+			Item:     "start",
+		}, {
+			HelpText: "Delete all the old subscriptions",
+			Item:     "cleanup",
+		}}
+		migrate.AddStaticListArgument("", false, migrateItems)
+		confluence.AddCommand(migrate)
+	}
 	return confluence
 }
 
@@ -408,6 +437,11 @@ func deleteConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.
 }
 
 func listOldSubscriptions(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+	if !utils.IsSystemAdmin(context.UserId) {
+		p.postCommandResponse(context, installOnlySystemAdmin)
+		return &model.CommandResponse{}
+	}
+
 	oldSubscriptions, getErr := service.GetOldSubscriptions()
 	if getErr != nil {
 		p.postCommandResponse(context, getErr.Error())
@@ -421,6 +455,61 @@ func listOldSubscriptions(p *Plugin, context *model.CommandArgs, args ...string)
 
 	list := serializer.FormattedOldSubscriptionList(oldSubscriptions)
 	p.postCommandResponse(context, list)
+	return &model.CommandResponse{}
+}
+
+func startSubscriptionMigration(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+	if !utils.IsSystemAdmin(context.UserId) {
+		p.postCommandResponse(context, installOnlySystemAdmin)
+		return &model.CommandResponse{}
+	}
+
+	oldSubscriptions, getErr := service.GetOldSubscriptions()
+	if getErr != nil {
+		p.postCommandResponse(context, getErr.Error())
+		return &model.CommandResponse{}
+	}
+
+	if len(oldSubscriptions) == 0 {
+		p.postCommandResponse(context, NoOldSubscriptionsMsg)
+		return &model.CommandResponse{}
+	}
+
+	go func() {
+		subscriptionString := p.migrateSubscriptions(oldSubscriptions, context.UserId)
+		p.postCommandResponse(context, fmt.Sprintf("%s%s", MigrationCompletedMsg, subscriptionString))
+	}()
+
+	p.postCommandResponse(context, MigrationWaitMsg)
+	return &model.CommandResponse{}
+}
+
+func deleteOldSubscriptions(p *Plugin, context *model.CommandArgs, args ...string) *model.CommandResponse {
+	if !utils.IsSystemAdmin(context.UserId) {
+		p.postCommandResponse(context, installOnlySystemAdmin)
+		return &model.CommandResponse{}
+	}
+
+	oldSubscriptions, getErr := service.GetOldSubscriptions()
+	if getErr != nil {
+		p.postCommandResponse(context, getErr.Error())
+		return &model.CommandResponse{}
+	}
+
+	if len(oldSubscriptions) == 0 {
+		p.postCommandResponse(context, NoOldSubscriptionsDeleteMsg)
+		return &model.CommandResponse{}
+	}
+
+	go func() {
+		if err := p.API.KVDelete(storePackage.GetOldSubscriptionKey()); err != nil {
+			p.API.LogError("Unable to delete old subscriptions", "Error", err.Error())
+		}
+
+		p.postCommandResponse(context, CleanupCompletedMsg)
+	}()
+
+	p.postCommandResponse(context, CleanupWaitMsg)
 	return &model.CommandResponse{}
 }
 

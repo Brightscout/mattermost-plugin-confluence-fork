@@ -54,6 +54,8 @@ type Subscription interface {
 	GetOldFormattedSubscription() string
 	IsValid() error
 	ValidateSubscription(*Subscriptions) error
+	GetEvents() []string
+	GetSpaceKeyOrPageID() string
 }
 type BaseSubscription struct {
 	Alias     string   `json:"alias"`
