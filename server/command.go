@@ -50,7 +50,16 @@ const (
 		"* `/confluence install server [confluenceURL]` - Connect Mattermost to a Confluence Server or Data Center instance.\n" +
 		"Uninstall Confluence instances:\n" +
 		"* `/confluence uninstall cloud [confluenceURL]` - Disconnect Mattermost from a Confluence Cloud instance located at <confluenceURL>\n" +
-		"* `/confluence uninstall server [confluenceURL]` - Disconnect Mattermost from a Confluence Server or Data Center instance located at <confluenceURL>\n"
+		"* `/confluence uninstall server [confluenceURL]` - Disconnect Mattermost from a Confluence Server or Data Center instance located at <confluenceURL>\n" +
+		"Manage Confluence instance Configurations:\n" +
+		"* `/confluence config add [confluenceURL]` - Add config for the confluence instance <confluenceURL>.\n" +
+		"* `/confluence config list` - List all the added configs.\n" +
+		"* `/confluence config delete \"<name>\"` - Delete config for the confluence instance.\n"
+
+	migrationCommandsHelpText = "Manage Confluence subscription migrations:\n" +
+		"* `/confluence migrate list` - List all the old subscriptions to be migrated.\n" +
+		"* `/confluence migrate start` - Start the migration of old subscriptions.\n" +
+		"* `/confluence migrate cleanup` - Delete all the old subscriptions.\n"
 
 	invalidCommand              = "Invalid command."
 	installOnlySystemAdmin      = "`/confluence install` can only be run by a system administrator."
@@ -275,6 +284,15 @@ func (p *Plugin) help(args *model.CommandArgs) *model.CommandResponse {
 	helpText := helpTextHeader + commonHelpText
 	if authorized {
 		helpText += sysAdminHelpText
+	}
+
+	oldSubscriptions, getErr := service.GetOldSubscriptions()
+	if getErr != nil {
+		return p.responsef(args, getErr.Error())
+	}
+
+	if len(oldSubscriptions) != 0 {
+		helpText += migrationCommandsHelpText
 	}
 
 	p.postCommandResponse(args, helpText)
@@ -576,6 +594,12 @@ func getFullHelpText(p *Plugin, context *model.CommandArgs, args ...string) stri
 	if utils.IsSystemAdmin(context.UserId) {
 		helpText += sysAdminHelpText
 	}
+
+	oldSubscriptions, _ := service.GetOldSubscriptions()
+	if len(oldSubscriptions) != 0 {
+		helpText += migrationCommandsHelpText
+	}
+
 	return helpText
 }
 
