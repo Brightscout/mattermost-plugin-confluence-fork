@@ -603,8 +603,8 @@ func getFullHelpText(p *Plugin, context *model.CommandArgs, args ...string) stri
 	return helpText
 }
 
-func (p *Plugin) executeConnectInfo(UserID, confluenceURL string) (types.ID, string) {
-	info, err := p.GetUserInfo(types.ID(UserID), nil)
+func (p *Plugin) executeConnectInfo(userID, confluenceURL string) (types.ID, string) {
+	info, err := p.GetUserInfo(types.ID(userID), nil)
 	if err != nil {
 		return "", fmt.Sprintf("Failed to connect. Error: %v", err)
 	}
