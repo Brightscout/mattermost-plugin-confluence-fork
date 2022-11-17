@@ -608,18 +608,22 @@ func (p *Plugin) executeConnectInfo(userID, confluenceURL string) (types.ID, str
 	if err != nil {
 		return "", fmt.Sprintf("Failed to connect. Error: %v", err)
 	}
+
 	if info.Instances.IsEmpty() {
 		return "", "No Confluence instances have been installed. Please contact the system administrator."
 	}
+
 	if confluenceURL == "" {
 		if info.connectable.Len() == 1 {
 			confluenceURL = info.connectable.IDs()[0].String()
 		}
 	}
+
 	instanceID := types.ID(confluenceURL)
 	if info.connectable.IsEmpty() {
 		return instanceID, fmt.Sprintf("You already have connected all available Confluence accounts. Please use `/confluence disconnect --instance=%s` to disconnect.", instanceID)
 	}
+
 	if !info.connectable.Contains(instanceID) {
 		return instanceID, fmt.Sprintf("Confluence instance %s is not installed, please contact the system administrator.", instanceID)
 	}

@@ -20,11 +20,16 @@ type ConfluenceStatus struct {
 	State string `json:"state"`
 }
 
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
+
 func NormalizeConfluenceURL(confluenceURL string) (string, error) {
 	u, err := url.Parse(confluenceURL)
 	if err != nil {
 		return "", err
 	}
+
 	if u.Host == "" {
 		ss := strings.Split(u.Path, "/")
 		if len(ss) > 0 && ss[0] != "" {
@@ -36,6 +41,7 @@ func NormalizeConfluenceURL(confluenceURL string) (string, error) {
 			return "", err
 		}
 	}
+
 	if u.Host == "" {
 		return "", errors.Errorf("Invalid URL, no hostname: %q", confluenceURL)
 	}
@@ -47,13 +53,14 @@ func NormalizeConfluenceURL(confluenceURL string) (string, error) {
 	return confluenceURL, nil
 }
 
-// CheckConfluenceURL checks if `/status` endpoint of the Confluence URL is accessible
+// CheckConfluenceURL checks if the `/status` endpoint of the Confluence URL is accessible
 // and responding with the correct state which is "RUNNING"
 func CheckConfluenceURL(mattermostSiteURL, confluenceURL string, requireHTTPS bool) (_ string, err error) {
 	confluenceURL, err = NormalizeConfluenceURL(confluenceURL)
 	if err != nil {
 		return "", err
 	}
+
 	if confluenceURL == strings.TrimSuffix(mattermostSiteURL, "/") {
 		return "", errors.Errorf("%s is the Mattermost site URL. Please use your Confluence URL", confluenceURL)
 	}
@@ -80,10 +87,10 @@ func CheckConfluenceURL(mattermostSiteURL, confluenceURL string, requireHTTPS bo
 		return "", err
 	}
 	var status ConfluenceStatus
-	err = json.Unmarshal(resBody, &status)
-	if err != nil {
+	if err = json.Unmarshal(resBody, &status); err != nil {
 		return "", err
 	}
+
 	if status.State != "RUNNING" {
 		return "", errors.Errorf("Confluence server is not in correct state, it should be up and running: %q", confluenceURL)
 	}
@@ -111,10 +118,10 @@ func GetEndpointURL(instanceURL, path string) (string, error) {
 func CallJSON(url, method, path string, in, out interface{}, httpClient *http.Client) (responseData []byte, err error) {
 	contentType := "application/json"
 	buf := &bytes.Buffer{}
-	err = json.NewEncoder(buf).Encode(in)
-	if err != nil {
+	if err = json.NewEncoder(buf).Encode(in); err != nil {
 		return nil, err
 	}
+
 	return call(url, method, path, contentType, buf, out, httpClient)
 }
 
@@ -177,13 +184,10 @@ func call(basePath, method, path, contentType string, inBody io.Reader, out inte
 		return nil, errors.Errorf(ErrorStatusNotFound)
 	}
 
-	type ErrorResponse struct {
-		Message string `json:"message"`
-	}
 	errResp := ErrorResponse{}
-	err = json.Unmarshal(responseData, &errResp)
-	if err != nil {
+	if err = json.Unmarshal(responseData, &errResp); err != nil {
 		return nil, err
 	}
+
 	return responseData, errors.New(errResp.Message)
 }
