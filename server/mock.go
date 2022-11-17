@@ -48,7 +48,8 @@ func getValidUserAndChannelID() (string, string) {
 
 func getMockUser(isAdmin bool) *model.User {
 	if isAdmin {
-		return &model.User{Id: "123", Roles: "system_admin"}
+		return &model.User{Id: "123", Roles: model.SystemAdminRoleId}
 	}
-	return &model.User{Id: "123", Roles: "system_user"}
+
+	return &model.User{Id: "123", Roles: model.SystemUserRoleId}
 }

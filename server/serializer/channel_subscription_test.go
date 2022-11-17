@@ -7,6 +7,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func getMockSpaceSubscription() Subscription {
+	return &SpaceSubscription{
+		SpaceKey: "TS",
+		BaseSubscription: BaseSubscription{
+			Alias:     "test",
+			BaseURL:   "https://test.com",
+			ChannelID: "testChannelID",
+			Events:    []string{CommentRemovedEvent, CommentUpdatedEvent},
+		},
+	}
+}
+
+func getMockPageSubscription() Subscription {
+	return &PageSubscription{
+		PageID: "12345",
+		BaseSubscription: BaseSubscription{
+			Alias:     "abc",
+			BaseURL:   "https://test.com",
+			ChannelID: "testChannelID",
+			Events:    []string{CommentCreatedEvent, CommentUpdatedEvent},
+		},
+	}
+}
+
 func TestFormattedSubscriptionList(t *testing.T) {
 	tests := map[string]struct {
 		subscription map[string]Subscription
@@ -14,29 +38,13 @@ func TestFormattedSubscriptionList(t *testing.T) {
 	}{
 		"space subscription": {
 			subscription: map[string]Subscription{
-				"test": &SpaceSubscription{
-					SpaceKey: "TS",
-					BaseSubscription: BaseSubscription{
-						Alias:     "test",
-						BaseURL:   "https://test.com",
-						ChannelID: "testChannelID",
-						Events:    []string{CommentRemovedEvent, CommentUpdatedEvent},
-					},
-				},
+				"test": getMockSpaceSubscription(),
 			},
 			result: "#### Space Subscriptions \n| Name | Base URL | Space Key | Events|\n| :----|:--------| :--------| :-----|\n|test|https://test.com|TS|Comment Remove, Comment Update|",
 		},
 		"page subscription": {
 			subscription: map[string]Subscription{
-				"abc": &PageSubscription{
-					PageID: "12345",
-					BaseSubscription: BaseSubscription{
-						Alias:     "abc",
-						BaseURL:   "https://test.com",
-						ChannelID: "testChannelID",
-						Events:    []string{CommentCreatedEvent, CommentUpdatedEvent},
-					},
-				},
+				"abc": getMockPageSubscription(),
 			},
 			result: "#### Page Subscriptions \n| Name | Base URL | Page ID | Events|\n| :----|:--------| :--------| :-----|\n|abc|https://test.com|12345|Comment Create, Comment Update|",
 		},
@@ -59,29 +67,13 @@ func TestFormattedOldSubscriptionList(t *testing.T) {
 	}{
 		"space subscription": {
 			subscription: []Subscription{
-				&SpaceSubscription{
-					SpaceKey: "TS",
-					BaseSubscription: BaseSubscription{
-						Alias:     "test",
-						BaseURL:   "https://test.com",
-						ChannelID: "testChannelID",
-						Events:    []string{CommentRemovedEvent, CommentUpdatedEvent},
-					},
-				},
+				getMockSpaceSubscription(),
 			},
 			result: "#### Space Subscriptions \n| Name | Base URL | Space Key | Channel ID | Events|\n| :----|:--------| :--------| :-----|\n|test|https://test.com|TS|testChannelID|Comment Remove, Comment Update|",
 		},
 		"page subscription": {
 			subscription: []Subscription{
-				&PageSubscription{
-					PageID: "12345",
-					BaseSubscription: BaseSubscription{
-						Alias:     "abc",
-						BaseURL:   "https://test.com",
-						ChannelID: "testChannelID",
-						Events:    []string{CommentCreatedEvent, CommentUpdatedEvent},
-					},
-				},
+				getMockPageSubscription(),
 			},
 			result: "#### Page Subscriptions \n| Name | Base URL | Page ID | Channel ID | Events|\n| :----|:--------| :--------| :-----|\n|abc|https://test.com|12345|testChannelID|Comment Create, Comment Update|",
 		},
@@ -103,28 +95,12 @@ func TestGetOldFormattedSubscription(t *testing.T) {
 		result       string
 	}{
 		"space subscription": {
-			subscription: &SpaceSubscription{
-				SpaceKey: "TS",
-				BaseSubscription: BaseSubscription{
-					Alias:     "test",
-					BaseURL:   "https://test.com",
-					ChannelID: "testChannelID",
-					Events:    []string{CommentRemovedEvent, CommentUpdatedEvent},
-				},
-			},
-			result: "\n|test|https://test.com|TS|testChannelID|Comment Remove, Comment Update|",
+			subscription: getMockSpaceSubscription(),
+			result:       "\n|test|https://test.com|TS|testChannelID|Comment Remove, Comment Update|",
 		},
 		"page subscription": {
-			subscription: &PageSubscription{
-				PageID: "12345",
-				BaseSubscription: BaseSubscription{
-					Alias:     "abc",
-					BaseURL:   "https://test.com",
-					ChannelID: "testChannelID",
-					Events:    []string{CommentCreatedEvent, CommentUpdatedEvent},
-				},
-			},
-			result: "\n|abc|https://test.com|12345|testChannelID|Comment Create, Comment Update|",
+			subscription: getMockPageSubscription(),
+			result:       "\n|abc|https://test.com|12345|testChannelID|Comment Create, Comment Update|",
 		},
 	}
 
@@ -144,28 +120,12 @@ func TestGetFormattedSubscription(t *testing.T) {
 		result       string
 	}{
 		"space subscription": {
-			subscription: &SpaceSubscription{
-				SpaceKey: "TS",
-				BaseSubscription: BaseSubscription{
-					Alias:     "test",
-					BaseURL:   "https://test.com",
-					ChannelID: "testChannelID",
-					Events:    []string{CommentRemovedEvent, CommentUpdatedEvent},
-				},
-			},
-			result: "\n|test|https://test.com|TS|Comment Remove, Comment Update|",
+			subscription: getMockSpaceSubscription(),
+			result:       "\n|test|https://test.com|TS|Comment Remove, Comment Update|",
 		},
 		"page subscription": {
-			subscription: &PageSubscription{
-				PageID: "12345",
-				BaseSubscription: BaseSubscription{
-					Alias:     "abc",
-					BaseURL:   "https://test.com",
-					ChannelID: "testChannelID",
-					Events:    []string{CommentCreatedEvent, CommentUpdatedEvent},
-				},
-			},
-			result: "\n|abc|https://test.com|12345|Comment Create, Comment Update|",
+			subscription: getMockPageSubscription(),
+			result:       "\n|abc|https://test.com|12345|Comment Create, Comment Update|",
 		},
 	}
 
