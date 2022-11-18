@@ -621,7 +621,7 @@ func (p *Plugin) executeConnectInfo(userID, confluenceURL string) (types.ID, str
 
 	instanceID := types.ID(confluenceURL)
 	if info.connectable.IsEmpty() {
-		return instanceID, fmt.Sprintf("You already have connected all available Confluence accounts. Please use `/confluence disconnect --instance=%s` to disconnect.", instanceID)
+		return instanceID, fmt.Sprintf("You have already connected all available Confluence accounts. Please use `/confluence disconnect --instance=%s` to disconnect.", instanceID)
 	}
 
 	if !info.connectable.Contains(instanceID) {

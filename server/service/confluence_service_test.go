@@ -12,7 +12,7 @@ func TestGetEndpointURL(t *testing.T) {
 		path           string
 		expectedResult string
 	}{
-		"get enpoint url": {
+		"get enpoint URL": {
 			instanceURL:    "https://test.atlassian.net",
 			path:           "/test/test1/test2",
 			expectedResult: "https://test.atlassian.net/test/test1/test2",

@@ -72,28 +72,15 @@ func CheckConfluenceURL(mattermostSiteURL, confluenceURL string, requireHTTPS bo
 		}
 	}()
 
-	resp, err := http.Get(confluenceURL + "/status")
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", errors.Errorf("Confluence server returned http status code %q when checking for availability: %q", resp.Status, confluenceURL)
-	}
-
-	resBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
 	var status ConfluenceStatus
-	if err = json.Unmarshal(resBody, &status); err != nil {
+	if _, err = CallJSON(confluenceURL, http.MethodGet, "/status", nil, &status, &http.Client{}); err != nil {
 		return "", err
 	}
 
 	if status.State != "RUNNING" {
 		return "", errors.Errorf("Confluence server is not in correct state, it should be up and running: %q", confluenceURL)
 	}
+
 	return confluenceURL, nil
 }
 
