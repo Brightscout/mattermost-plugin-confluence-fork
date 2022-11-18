@@ -1,9 +1,14 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -101,6 +106,107 @@ func IsConfluenceCloudURL(confluenceURL string) bool {
 		return false
 	}
 	return strings.HasSuffix(u.Hostname(), ".atlassian.net")
+}
+
+func CallJSONWithURL(instanceURL, path, method string, in, out interface{}, httpClient *http.Client) (responseData []byte, err error) {
+	urlPath, err := GetEndpointURL(instanceURL, path)
+	if err != nil {
+		return nil, err
+	}
+
+	return CallJSON(instanceURL, method, urlPath, in, out, httpClient)
+}
+
+func GetEndpointURL(instanceURL, path string) (string, error) {
+	endpointURL, err := url.Parse(strings.TrimSpace(fmt.Sprintf("%s%s", instanceURL, path)))
+	if err != nil {
+		return "", err
+	}
+
+	return endpointURL.String(), nil
+}
+
+func CallJSON(url, method, path string, in, out interface{}, httpClient *http.Client) (responseData []byte, err error) {
+	contentType := "application/json"
+	buf := &bytes.Buffer{}
+	err = json.NewEncoder(buf).Encode(in)
+	if err != nil {
+		return nil, err
+	}
+	return call(url, method, path, contentType, buf, out, httpClient)
+}
+
+func call(basePath, method, path, contentType string, inBody io.Reader, out interface{}, httpClient *http.Client) (responseData []byte, err error) {
+	errContext := fmt.Sprintf("confluence: Call failed: method:%s, path:%s", method, path)
+	pathURL, err := url.Parse(path)
+	if err != nil {
+		return nil, errors.WithMessage(err, errContext)
+	}
+
+	if pathURL.Scheme == "" || pathURL.Host == "" {
+		var baseURL *url.URL
+		baseURL, err = url.Parse(basePath)
+		if err != nil {
+			return nil, errors.WithMessage(err, errContext)
+		}
+		if path[0] != '/' {
+			path = "/" + path
+		}
+		path = baseURL.String() + path
+	}
+
+	req, err := http.NewRequest(method, path, inBody)
+	if err != nil {
+		return nil, err
+	}
+	if contentType != "" {
+		req.Header.Add("Content-Type", contentType)
+	}
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return handleResponse(resp, out)
+}
+
+func handleResponse(resp *http.Response, out interface{}) ([]byte, error) {
+	if resp.Body == nil {
+		return nil, nil
+	}
+	defer resp.Body.Close()
+
+	responseData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	switch resp.StatusCode {
+	case http.StatusOK, http.StatusCreated:
+		if out != nil {
+			err = json.Unmarshal(responseData, out)
+			if err != nil {
+				return responseData, err
+			}
+		}
+		return responseData, nil
+
+	case http.StatusNoContent:
+		return nil, nil
+
+	case http.StatusNotFound:
+		return nil, errors.Errorf(ErrorStatusNotFound)
+	}
+
+	type ErrorResponse struct {
+		Message string `json:"message"`
+	}
+	errResp := ErrorResponse{}
+	if err = json.Unmarshal(responseData, &errResp); err != nil {
+		return nil, err
+	}
+	return responseData, errors.New(errResp.Message)
 }
 
 func GetBodyForExcerpt(htmlBodyValue string) string {
