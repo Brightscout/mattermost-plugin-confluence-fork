@@ -93,5 +93,5 @@ const manifestStr = `
 `
 
 func init() {
-	json.NewDecoder(strings.NewReader(manifestStr)).Decode(&manifest)
+	_ = json.NewDecoder(strings.NewReader(manifestStr)).Decode(&manifest)
 }
