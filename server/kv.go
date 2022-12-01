@@ -22,8 +22,8 @@ const (
 	prefixInstance            = "conf_instance_"
 	prefixUser                = "user_"
 	prefixOneTimeSecret       = "ots_" // + unique key that will be deleted after the first verification
-	webhookKeyPrefix          = "webhook"
-	configKeyPrefix           = "_config"
+	prefixWebhookKey          = "webhook"
+	prefixConfigKey           = "_config"
 	expiryStoreTimeoutSeconds = 15 * 60
 )
 
@@ -92,12 +92,12 @@ func keyWithInstanceID(instanceID, key types.ID) string {
 }
 
 func keyWithInstanceIDForConfig(instanceID string) string {
-	return fmt.Sprintf("%s/%s", instanceID, configKeyPrefix)
+	return fmt.Sprintf("%s/%s", instanceID, prefixConfigKey)
 }
 
 func keyForWebhookID(instanceID, key types.ID) string {
 	h := md5.New() // #nosec G401
-	fmt.Fprintf(h, "%s/%s/%s", instanceID, key, webhookKeyPrefix)
+	fmt.Fprintf(h, "%s/%s/%s", instanceID, key, prefixWebhookKey)
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
