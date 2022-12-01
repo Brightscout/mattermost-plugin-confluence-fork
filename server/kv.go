@@ -657,7 +657,7 @@ func (store store) EnsureRSAKey() (rsaKey *rsa.PrivateKey, returnErr error) {
 		rsaKey = newRSAKey
 		store.plugin.debugf("Stored: RSA key")
 
-		// If we weren't able to save a new key above, another server must have beat us to it. Get the
+		// If we weren't able to save a new key above, another server must have beaten us to it. Get the
 		// key from the database, and if that fails, error out.
 		if err = store.get(keyRSAKey, &rsaKey); err != nil {
 			return nil, err
