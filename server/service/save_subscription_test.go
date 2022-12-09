@@ -41,7 +41,7 @@ func TestSaveSpaceSubscription(t *testing.T) {
 				},
 			},
 			statusCode:   http.StatusBadRequest,
-			errorMessage: serializer.UrlSpaceKeyAlreadyExist,
+			errorMessage: serializer.URLSpaceKeyAlreadyExist,
 		},
 		"subscription unique base url": {
 			newSubscription: &serializer.SpaceSubscription{
@@ -157,7 +157,7 @@ func TestSavePageSubscription(t *testing.T) {
 				},
 			},
 			statusCode:   http.StatusBadRequest,
-			errorMessage: serializer.UrlPageIDAlreadyExist,
+			errorMessage: serializer.URLPageIDAlreadyExist,
 		},
 		"subscription unique base url": {
 			newSubscription: &serializer.PageSubscription{

@@ -168,7 +168,7 @@ func (ss *SpaceSubscription) ValidateSubscription(subs *Subscriptions) error {
 	key := store.GetURLSpaceKeyCombinationKey(ss.BaseURL, ss.SpaceKey)
 	if urlSpaceKeySubscriptions, valid := subs.ByURLSpaceKey[key]; valid {
 		if _, ok := urlSpaceKeySubscriptions[ss.ChannelID]; ok {
-			return errors.New(UrlSpaceKeyAlreadyExist)
+			return errors.New(URLSpaceKeyAlreadyExist)
 		}
 	}
 	return nil

@@ -159,7 +159,7 @@ func (ps *PageSubscription) ValidateSubscription(subs *Subscriptions) error {
 	key := store.GetURLPageIDCombinationKey(ps.BaseURL, ps.PageID)
 	if urlPageIDSubscriptions, valid := subs.ByURLPageID[key]; valid {
 		if _, ok := urlPageIDSubscriptions[ps.ChannelID]; ok {
-			return errors.New(UrlPageIDAlreadyExist)
+			return errors.New(URLPageIDAlreadyExist)
 		}
 	}
 	return nil
