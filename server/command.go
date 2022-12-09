@@ -171,22 +171,6 @@ func getAutoCompleteData(showMigrateCommands bool) *model.AutocompleteData {
 	uninstall.AddStaticListArgument("", false, uninstallItems)
 	confluence.AddCommand(uninstall)
 
-	connect := model.NewAutocompleteData("connect", "", "Connect your Mattermost account to your Confluence account")
-	confluence.AddCommand(connect)
-
-	disconnect := model.NewAutocompleteData("disconnect", "", "Disconnect your Mattermost account to your Confluence account")
-	confluence.AddCommand(disconnect)
-
-	list := model.NewAutocompleteData("list", "", "List all subscriptions for the current channel")
-	confluence.AddCommand(list)
-
-	edit := model.NewAutocompleteData("edit", "[name]", "Edit the subscription settings associated with the given subscription name")
-	edit.AddDynamicListArgument("name", "api/v1/autocomplete/channel-subscriptions", false)
-	confluence.AddCommand(edit)
-
-	subscribe := model.NewAutocompleteData("subscribe", "", "Subscribe the current channel to notifications from Confluence")
-	confluence.AddCommand(subscribe)
-
 	config := model.NewAutocompleteData("config", "", "Config related options for confluence instances")
 
 	addConfig := model.NewAutocompleteData("add", "[instance]", "Add config for the confluence instance")
@@ -203,12 +187,25 @@ func getAutoCompleteData(showMigrateCommands bool) *model.AutocompleteData {
 
 	confluence.AddCommand(config)
 
+	connect := model.NewAutocompleteData("connect", "", "Connect your Mattermost account to your Confluence account")
+	confluence.AddCommand(connect)
+
+	disconnect := model.NewAutocompleteData("disconnect", "", "Disconnect your Mattermost account to your Confluence account")
+	confluence.AddCommand(disconnect)
+
+	subscribe := model.NewAutocompleteData("subscribe", "", "Subscribe the current channel to notifications from Confluence")
+	confluence.AddCommand(subscribe)
+
 	unsubscribe := model.NewAutocompleteData("unsubscribe", "[name]", "Unsubscribe the current channel from notifications associated with the given subscription name")
 	unsubscribe.AddDynamicListArgument("name", "api/v1/autocomplete/channel-subscriptions", false)
 	confluence.AddCommand(unsubscribe)
 
-	help := model.NewAutocompleteData("help", "", "Show confluence slash command help")
-	confluence.AddCommand(help)
+	list := model.NewAutocompleteData("list", "", "List all subscriptions for the current channel")
+	confluence.AddCommand(list)
+
+	edit := model.NewAutocompleteData("edit", "[name]", "Edit the subscription settings associated with the given subscription name")
+	edit.AddDynamicListArgument("name", "api/v1/autocomplete/channel-subscriptions", false)
+	confluence.AddCommand(edit)
 
 	if showMigrateCommands {
 		migrate := model.NewAutocompleteData("migrate", "", "Migrate your subscriptions to a newer version of confluence plugin")
@@ -225,6 +222,10 @@ func getAutoCompleteData(showMigrateCommands bool) *model.AutocompleteData {
 		migrate.AddStaticListArgument("", false, migrateItems)
 		confluence.AddCommand(migrate)
 	}
+
+	help := model.NewAutocompleteData("help", "", "Show confluence slash command help")
+	confluence.AddCommand(help)
+
 	return confluence
 }
 
