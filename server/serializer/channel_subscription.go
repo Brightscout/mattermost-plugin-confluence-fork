@@ -21,9 +21,9 @@ const (
 	SubscriptionTypeSpace = "space_subscription"
 	SubscriptionTypePage  = "page_subscription"
 
-	aliasAlreadyExist       = "a subscription with the same name already exists in this channel"
-	urlSpaceKeyAlreadyExist = "a subscription with the same url and space key already exists in this channel"
-	urlPageIDAlreadyExist   = "a subscription with the same url and page id already exists in this channel"
+	aliasAlreadyExist       = "subscription with the same name already exists in this channel"
+	urlSpaceKeyAlreadyExist = "subscription with the same url and space key already exists in this channel"
+	urlPageIDAlreadyExist   = "subscription with the same url and page id already exists in this channel"
 	subscriptionFormatter   = "\n\n"
 )
 

@@ -444,6 +444,11 @@ func deleteConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.
 		return &model.CommandResponse{}
 	}
 
+	if len(args) == 0 {
+		response := executeConfluenceDefault(p, context, args...)
+		return response
+	}
+
 	instance := strings.Join(args, " ")
 
 	if err := p.instanceStore.DeleteInstanceConfig(instance); err != nil {
@@ -654,10 +659,10 @@ func executeConnect(p *Plugin, context *model.CommandArgs, args ...string) *mode
 	conn, err := p.userStore.LoadConnection(instanceID, types.ID(context.UserId))
 	if err == nil && len(conn.ConfluenceAccountID()) != 0 {
 		return p.responsef(context,
-			"You already have a Confluence account linked to your Mattermost account from %s. Please use `/confluence disconnect --instance=%s` to disconnect.",
-			instanceID, instanceID)
+			"You already have a Confluence account linked to your Mattermost account from %s. Please use `/confluence disconnect <instance url>` to disconnect.",
+			instanceID)
 	}
-	if _, err = p.instanceStore.LoadInstanceConfig(confluenceURL); err != nil {
+	if _, err = p.instanceStore.LoadInstanceConfig(instanceID.String()); err != nil {
 		return p.responsef(context, configNotFoundError, instanceID, instanceID)
 	}
 
@@ -683,7 +688,7 @@ func executeDisconnect(p *Plugin, commArgs *model.CommandArgs, args ...string) *
 	}
 	disconnected, err := p.DisconnectUser(confluenceURL, types.ID(commArgs.UserId))
 	if errors.Cause(err) == kvstore.ErrNotFound {
-		errorStr := "Your account is not connected to Confluence. Please use `/confluence connect` to connect your account."
+		errorStr := "Your account is not connected to Confluence. Please use `/confluence connect <instance url>` to connect your account."
 		if confluenceURL != "" {
 			errorStr = fmt.Sprintf("You don't have a Confluence account at %s linked to your Mattermost account currently. Please use `/confluence connect` to connect your account.", confluenceURL)
 		}
