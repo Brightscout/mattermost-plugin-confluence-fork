@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/pkg/errors"
 
 	"github.com/mattermost/mattermost-plugin-confluence/server/config"
 	"github.com/mattermost/mattermost-plugin-confluence/server/serializer"
@@ -51,7 +52,7 @@ func (p *Plugin) handleSaveSubscription(w http.ResponseWriter, r *http.Request) 
 
 func (p *Plugin) LogAndRespondError(w http.ResponseWriter, statusCode int, errorLog string, err error) {
 	p.API.LogError(errorLog, "Error", err.Error())
-	http.Error(w, errorLog+err.Error(), statusCode)
+	http.Error(w, errors.WithMessage(err, errorLog).Error(), statusCode)
 }
 
 func (p *Plugin) CreateSubscription(body []byte, channelID, subscriptionType, userID, path string) (int, string, error) {
