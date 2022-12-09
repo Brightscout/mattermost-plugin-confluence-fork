@@ -446,8 +446,7 @@ func deleteConfig(p *Plugin, context *model.CommandArgs, args ...string) *model.
 	}
 
 	if len(args) == 0 {
-		response := executeConfluenceDefault(p, context, args...)
-		return response
+		return executeConfluenceDefault(p, context, args...)
 	}
 
 	instance := strings.Join(args, " ")
