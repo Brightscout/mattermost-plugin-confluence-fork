@@ -282,7 +282,7 @@ func (store *store) DeleteInstanceConfig(instanceID string) (returnErr error) {
 	}
 
 	if config == nil {
-		return errors.New("config not found for instance.")
+		return errors.New("config not found for instance")
 	}
 
 	if appErr := store.plugin.API.KVDelete(keyWithInstanceIDForConfig(instanceID)); appErr != nil {
