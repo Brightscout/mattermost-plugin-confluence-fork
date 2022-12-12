@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/v6/model"
@@ -34,7 +35,7 @@ func (p *Plugin) handleConfluenceConfig(w http.ResponseWriter, r *http.Request) 
 	}
 
 	config := &serializer.ConfluenceConfig{
-		ServerURL:    submitRequest.Submission[configServerURL].(string),
+		ServerURL:    strings.TrimSuffix(submitRequest.Submission[configServerURL].(string), "/"),
 		ClientID:     submitRequest.Submission[configClientID].(string),
 		ClientSecret: submitRequest.Submission[configClientSecret].(string),
 	}
