@@ -190,7 +190,7 @@ func getAutoCompleteData(showMigrateCommands bool) *model.AutocompleteData {
 	connect := model.NewAutocompleteData("connect", "", "Connect your Mattermost account to your Confluence account")
 	confluence.AddCommand(connect)
 
-	disconnect := model.NewAutocompleteData("disconnect", "", "Disconnect your Mattermost account to your Confluence account")
+	disconnect := model.NewAutocompleteData("disconnect", "", "Disconnect your Mattermost account from your Confluence account")
 	confluence.AddCommand(disconnect)
 
 	subscribe := model.NewAutocompleteData("subscribe", "", "Subscribe the current channel to notifications from Confluence")

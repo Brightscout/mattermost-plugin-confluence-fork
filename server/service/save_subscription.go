@@ -9,7 +9,7 @@ import (
 	"github.com/mattermost/mattermost-plugin-confluence/server/store"
 )
 
-const generalSaveError = "an error occurred attempting to save a subscription"
+const generalSaveError = "an error occurred while attempting to save a subscription"
 
 func SaveSubscription(subscription serializer.Subscription) (int, error) {
 	subs, err := GetSubscriptions()
