@@ -645,6 +645,8 @@ func executeConnect(p *Plugin, context *model.CommandArgs, args ...string) *mode
 	if len(args) > 0 {
 		confluenceURL = args[0]
 	}
+
+	confluenceURL = strings.TrimSuffix(confluenceURL, "/")
 	instance := instances.getByAlias(confluenceURL)
 	if instance != nil {
 		confluenceURL = instance.InstanceID.String()
