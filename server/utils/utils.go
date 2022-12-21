@@ -265,11 +265,11 @@ func IsValidURL(rawURL string) error {
 	}
 
 	if u.Scheme != "http" && u.Scheme != "https" {
-		errors.New("URL schema must either be http or https")
+		return errors.New("url schema must either be http or https")
 	}
 
 	if u.Host == "" {
-		return errors.New("URL must contain a host")
+		return errors.New("url must contain a host")
 	}
 
 	return nil
