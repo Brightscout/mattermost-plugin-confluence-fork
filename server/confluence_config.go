@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	ParamUserID = "userID"
+	ParamUserID     = "userID"
 	ErrorInvalidURL = "Please enter a valid URL."
 )
 
@@ -38,13 +38,11 @@ func (p *Plugin) handleConfluenceConfig(w http.ResponseWriter, r *http.Request) 
 	}
 
 	configInstanceURL := submitRequest.Submission[configServerURL].(string)
-
 	if vErr := utils.IsValidURL(configInstanceURL); vErr != nil {
 		response.Error = ErrorInvalidURL
-
 		response, mErr := json.Marshal(response)
 		if mErr != nil {
-			p.API.LogError("Error in marshalling the URL.", "Error", mErr.Error())
+			p.API.LogError("Error in marshaling the response.", "Error", mErr.Error())
 			http.Error(w, mErr.Error(), http.StatusInternalServerError)
 			return
 		}
