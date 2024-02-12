@@ -35,9 +35,9 @@ With the Confluence plugin, you can subscribe to a variety of events in Confluen
   - page_updated
   - comment_created
   - comment_updated
-- User can only create the subscriptions for the spaces and pages for which they have permissions to and the same for the notifications too. 
-- Admins can change permissions for both mattermost and confluence side from the plugin configuration.
-    ![image](https://github.com/mattermost/mattermost-plugin-confluence/assets/90389917/f7e70d82-157b-4dc8-aa0a-868b115f2cb4)
+- Users can only create subscriptions for the spaces and pages for which they have permission and same for the notifications as well. 
+- Admins can change permissions for both Mattermost and Confluence side from the plugin configuration.
+    ![image](https://github.com/Brightscout/mattermost-plugin-confluence-fork/assets/90389917/b94fbf84-f345-4ded-aa8d-21de1b870062)
 
 ## Configure notifications
 
