@@ -4,6 +4,7 @@ import Hooks from './hooks';
 import reducer from './reducers';
 
 import SubscriptionModal from './components/subscription_modal';
+import CreateConfluencePage from './components/create_confluence_page_modal/create_confluence_page_modal';
 
 //
 // Define the plugin class that will register
@@ -12,9 +13,11 @@ import SubscriptionModal from './components/subscription_modal';
 class PluginClass {
     initialize(registry, store) {
         registry.registerReducer(reducer);
+        registry.registerRootComponent(CreateConfluencePage);
         registry.registerRootComponent(SubscriptionModal);
         const hooks = new Hooks(store);
         registry.registerSlashCommandWillBePostedHook(hooks.slashCommandWillBePostedHook);
+        registry.registerPostDropdownMenuAction('Create Confluence Page', hooks.createConfluencePage);
     }
 }
 
